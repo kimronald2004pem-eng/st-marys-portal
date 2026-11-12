@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>St. Mary's High School - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-blue-900 text-white shadow-md border-b-4 border-yellow-400">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='images/school_badge.jpg') }}" alt="Badge" class="w-10 h-10 rounded-full border border-yellow-400 bg-white object-contain">
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide">ST MARY'S HIGH SCHOOL</h1>
+                    <p class="text-xs text-yellow-300 font-mono">Portal System | Motto: Ever The Best</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="text-sm font-semibold">{{ name }}</p>
+                    <span class="text-xs bg-red-600 px-2 py-0.5 rounded text-white font-mono">{{ role }}</span>
+                </div>
+                <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg font-semibold transition">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- Welcome Banner -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8 border-l-8 border-red-600 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-blue-900">Welcome to the Management Portal</h2>
+                <p class="text-gray-600 text-sm mt-1">Select a module below to manage school operations, records, and reports securely.</p>
+            </div>
+            <div class="hidden md:block text-right">
+                <span class="text-xs text-gray-400 uppercase tracking-widest font-bold">System Status</span>
+                <p class="text-green-600 font-semibold text-sm">● Cloud Secure & Active</p>
+            </div>
+        </div>
+
+        <!-- Modules Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {% if role == 'HEAD_TEACHER' %}
+            <!-- Master Dashboard (Head Teacher Only) -->
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-yellow-500 hover:shadow-lg transition">
+                <div class="text-yellow-600 font-bold text-xl mb-2">👑 Master Dashboard</div>
+                <p class="text-gray-600 text-sm mb-4">Exclusive master controls, administrative oversight, and security alert gates.</p>
+                <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-2.5 py-1 rounded font-semibold">Restricted: HT Only</span>
+            </div>
+            {% endif %}
+
+            <!-- Student Registers & Records -->
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-blue-600 hover:shadow-lg transition">
+                <div class="text-blue-900 font-bold text-xl mb-2">📚 Student Registers</div>
+                <p class="text-gray-600 text-sm mb-4">View class lists, total student counts, boarding/day status, and updates for new joinings.</p>
+                <button class="text-blue-600 hover:text-blue-800 text-sm font-semibold">Access Module &rarr;</button>
+            </div>
+
+            <!-- Student Payments (Bursar) -->
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-red-600 hover:shadow-lg transition">
+                <div class="text-red-600 font-bold text-xl mb-2">💰 Student Payments</div>
+                <p class="text-gray-600 text-sm mb-4">Track tuition, registration fees, non-monetary requirements ticks, and fee balances automatically.</p>
+                <button class="text-red-600 hover:text-red-800 text-sm font-semibold">Access Module &rarr;</button>
+            </div>
+
+            <!-- Staff & Payroll -->
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-blue-900 hover:shadow-lg transition">
+                <div class="text-blue-900 font-bold text-xl mb-2">👨‍🏫 Staff & Payroll</div>
+                <p class="text-gray-600 text-sm mb-4">Manage teachers, subject allocations, roles (Class Teachers), advances, allowances, and net pay.</p>
+                <button class="text-blue-900 hover:text-blue-700 text-sm font-semibold">Access Module &rarr;</button>
+            </div>
+
+            <!-- Report Cards & Batch Printing -->
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-yellow-500 hover:shadow-lg transition">
+                <div class="text-yellow-700 font-bold text-xl mb-2">📄 Report Card Section</div>
+                <p class="text-gray-600 text-sm mb-4">Mid-term and End-of-Term reports with QR codes, teacher initials, grading scales, and class batch printing.</p>
+                <button class="text-yellow-600 hover:text-yellow-800 text-sm font-semibold">Access Module &rarr;</button>
+            </div>
+
+            <!-- Programs & Elections -->
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-red-600 hover:shadow-lg transition">
+                <div class="text-red-600 font-bold text-xl mb-2">⚖️ Programs & Elections</div>
+                <p class="text-gray-600 text-sm mb-4">Manage academic year schedules, term programs, and student leader prefect boards with photo IDs.</p>
+                <button class="text-red-600 hover:text-red-800 text-sm font-semibold">Access Module &rarr;</button>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 py-6 text-center text-gray-500 text-xs border-t border-gray-200">
+        <p>St. Mary's High School Database Management System &copy; 2026. Built for Professional Academic Excellence.</p>
+    </footer>
+
+</body>
+</html>
