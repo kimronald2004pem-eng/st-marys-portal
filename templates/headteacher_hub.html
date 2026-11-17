@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Head Teacher Hub - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen p-6 font-sans">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Top Navigation -->
+        <div class="flex flex-wrap justify-between items-center bg-gradient-to-r from-blue-900 to-red-950 p-6 rounded-3xl shadow-xl border-2 border-yellow-400 gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-yellow-400 uppercase tracking-wide">HEAD TEACHER ADMINISTRATIVE HUB</h1>
+                <p class="text-xs text-gray-200">St. Mary's High School Ziroobwe &bull; Active Term: <span class="text-yellow-300 font-bold">{{ schedule.term }} {{ schedule.year }}</span></p>
+            </div>
+            <div class="flex gap-3">
+                <a href="/dashboard" class="tactile-btn bg-blue-800 hover:bg-blue-700 border border-yellow-400 text-yellow-300 text-xs px-5 py-2.5 rounded-xl font-black uppercase">Dashboard</a>
+                <a href="/download-backup" class="tactile-btn bg-emerald-700 hover:bg-emerald-600 border border-yellow-400 text-white text-xs px-5 py-2.5 rounded-xl font-black uppercase">💾 Download DB Backup</a>
+                <a href="/logout" class="tactile-btn bg-red-600 hover:bg-red-500 border border-red-300 text-white text-xs px-5 py-2.5 rounded-xl font-black uppercase">Logout</a>
+            </div>
+        </div>
+
+        {% if success_msg %}
+        <div class="bg-emerald-800 border-2 border-yellow-400 text-white p-4 rounded-2xl text-xs font-bold shadow-lg">
+            ✅ {{ success_msg }}
+        </div>
+        {% endif %}
+
+        <!-- Real Calendar Schedule & Term Rollover Control Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Active Term & Real 60-Year Calendar Selector -->
+            <div class="bg-blue-900/90 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl space-y-5">
+                <div class="border-b border-blue-700 pb-3 flex justify-between items-center">
+                    <h2 class="text-sm font-black uppercase text-yellow-400 tracking-wider">📅 Official School Calendar &amp; Term Dates</h2>
+                    <span class="bg-red-700 text-yellow-300 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">2026 – 2086 Calendar</span>
+                </div>
+
+                <form method="POST" class="space-y-4 text-xs">
+                    <input type="hidden" name="action" value="save_schedule">
+                    
+                    <!-- Term and Academic Year -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-yellow-300 font-bold mb-1">Active Term</label>
+                            <select name="global_term" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl p-2.5 text-white font-bold">
+                                {% for t in terms %}
+                                <option value="{{ t }}" {% if schedule.term == t %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-yellow-300 font-bold mb-1">Academic Year</label>
+                            <select name="global_year" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl p-2.5 text-white font-bold">
+                                {% for y in cal_years %}
+                                <option value="{{ y }}" {% if schedule.year|string == y|string %}selected{% endif %}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Term Ended On: Real Day / Month / Year Calendar Dropdowns -->
+                    <div class="bg-blue-950/80 border border-blue-700 p-3.5 rounded-2xl space-y-2">
+                        <label class="block text-yellow-400 font-black uppercase text-[11px]">Term Ended On (Day / Month / Year)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <select name="ended_day" class="bg-blue-900 border border-yellow-400/50 rounded-xl p-2 text-white font-bold">
+                                {% for d in cal_days %}
+                                <option value="{{ d }}" {% if schedule.ended_day == d %}selected{% endif %}>{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="ended_month" class="bg-blue-900 border border-yellow-400/50 rounded-xl p-2 text-white font-bold">
+                                {% for m in cal_months %}
+                                <option value="{{ m }}" {% if schedule.ended_month == m %}selected{% endif %}>{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="ended_year" class="bg-blue-900 border border-yellow-400/50 rounded-xl p-2 text-white font-bold">
+                                {% for y in cal_years %}
+                                <option value="{{ y }}" {% if schedule.ended_year|string == y|string %}selected{% endif %}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Next Term Begins On: Real Day / Month / Year Calendar Dropdowns -->
+                    <div class="bg-red-950/70 border border-red-700 p-3.5 rounded-2xl space-y-2">
+                        <label class="block text-yellow-400 font-black uppercase text-[11px]">Next Term Begins On (Day / Month / Year)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <select name="begins_day" class="bg-blue-950 border border-yellow-400/50 rounded-xl p-2 text-white font-bold">
+                                {% for d in cal_days %}
+                                <option value="{{ d }}" {% if schedule.begins_day == d %}selected{% endif %}>{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="begins_month" class="bg-blue-950 border border-yellow-400/50 rounded-xl p-2 text-white font-bold">
+                                {% for m in cal_months %}
+                                <option value="{{ m }}" {% if schedule.begins_month == m %}selected{% endif %}>{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="begins_year" class="bg-blue-950 border border-yellow-400/50 rounded-xl p-2 text-white font-bold">
+                                {% for y in cal_years %}
+                                <option value="{{ y }}" {% if schedule.begins_year|string == y|string %}selected{% endif %}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="tactile-btn w-full bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black py-3 rounded-xl uppercase tracking-wider shadow-lg">
+                        Save Calendar &amp; Term Dates
+                    </button>
+                </form>
+            </div>
+
+            <!-- Term Rollover Archive & Factory Wipe Clean -->
+            <div class="bg-red-950/90 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl space-y-4 flex flex-col justify-between">
+                <div>
+                    <div class="border-b border-red-800 pb-3">
+                        <h2 class="text-sm font-black uppercase text-yellow-400 tracking-wider">🗄️ Term Rollover &amp; Data Reset</h2>
+                    </div>
+                    <p class="text-xs text-red-100 mt-3 leading-relaxed">
+                        Archive the current term's marks and fee ledgers into the Historical Vault and reset active registers for the new term, or execute a full factory wipe to remove demo records before live deployment.
+                    </p>
+                </div>
+                
+                <div class="space-y-3">
+                    <!-- Archive & Reset Button -->
+                    <form method="POST" onsubmit="return confirm('Archive current term and reset active marks for the new term?');">
+                        <input type="hidden" name="action" value="archive_term">
+                        <button type="submit" class="tactile-btn w-full bg-red-600 hover:bg-red-500 text-white border-2 border-yellow-400 font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg">
+                            Archive Term &amp; Reset for New Term
+                        </button>
+                    </form>
+
+                    <!-- Factory Clean Demo Data Button -->
+                    <form method="POST" onsubmit="return confirm('WARNING: This will completely wipe all demo students, staff, and marks to give you a 100% clean slate. Proceed?');">
+                        <input type="hidden" name="action" value="factory_reset">
+                        <button type="submit" class="tactile-btn w-full bg-blue-950 hover:bg-blue-900 text-yellow-400 border-2 border-yellow-400 font-black py-3.5 rounded-xl uppercase tracking-wider text-xs shadow-lg">
+                            Wipe Demo Data &amp; Start Fresh
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Institutional Analytical Reports & Termly Tracking Hub -->
+        <div class="bg-gradient-to-r from-blue-900 to-red-950 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl space-y-4">
+            <h2 class="text-sm font-black uppercase text-yellow-400 tracking-wider">📊 Institutional Analytical Reports &amp; Termly Tracking</h2>
+            <p class="text-xs text-gray-200">Launch multi-page comprehensive class reports with longitudinal SVG line graph analytics or term-over-term progress tracking.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <!-- Comprehensive Class Report Launcher -->
+                <form method="GET" action="/headteacher/comprehensive-report" class="bg-blue-950 border border-yellow-400/60 p-5 rounded-2xl flex flex-col justify-between space-y-4">
+                    <div>
+                        <strong class="text-yellow-400 text-xs block uppercase">Massive Comprehensive Class Report</strong>
+                        <p class="text-[11px] text-gray-300 mt-1">Generates a 4-page board report with macro narratives, science vs. humanities distributions, and SVG line graphical analysis.</p>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <select name="class" class="bg-blue-900 border border-yellow-400/50 text-white text-xs rounded-xl px-3 py-2.5 font-bold w-full">
+                            {% for c in classes %}
+                            <option value="{{ c }}">Class: {{ c }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-xs font-black px-5 py-2.5 rounded-xl uppercase tracking-wider whitespace-nowrap shadow">
+                            Open Report
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Termly Progress Tracking Analytics Launcher -->
+                <form method="GET" action="/headteacher/progress-report" class="bg-blue-950 border border-yellow-400/60 p-5 rounded-2xl flex flex-col justify-between space-y-4">
+                    <div>
+                        <strong class="text-yellow-400 text-xs block uppercase">Termly Progress Tracking Analytics</strong>
+                        <p class="text-[11px] text-gray-300 mt-1">Cross-references live student scores against historical archives to compute individual subject trends and term averages.</p>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <select name="filter_class" class="bg-blue-900 border border-yellow-400/50 text-white text-xs rounded-xl px-3 py-2.5 font-bold w-full">
+                            <option value="ALL">All Classes (S.1 - S.6)</option>
+                            {% for c in classes %}
+                            <option value="{{ c }}">Class: {{ c }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="tactile-btn bg-red-600 hover:bg-red-500 text-yellow-300 border border-yellow-400 text-xs font-black px-5 py-2.5 rounded-xl uppercase tracking-wider whitespace-nowrap shadow">
+                            Track Progress
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Historical Archives Vault Section -->
+        <div class="bg-blue-900/90 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl space-y-4">
+            <h2 class="text-sm font-black uppercase text-yellow-400 tracking-wider">Historical Archives Vault ({{ archives | length }} Terms Saved)</h2>
+            {% if archives %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                {% for key, val in archives.items() %}
+                <div class="bg-blue-950 border border-yellow-400/50 p-4 rounded-2xl space-y-2">
+                    <strong class="text-yellow-400 text-sm block">{{ key }}</strong>
+                    <p class="text-gray-300">Students Recorded: {{ val.students | length }}</p>
+                    <p class="text-gray-300">Staff Count: {{ val.staff | length }}</p>
+                    <div class="flex items-center justify-between pt-2">
+                        <span class="inline-block bg-emerald-900 text-emerald-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Archived &amp; Secured</span>
+                        <a href="/headteacher/progress-report?archive_key={{ key }}" class="tactile-btn bg-yellow-400 text-blue-950 text-[10px] px-3 py-1 rounded-lg font-black uppercase">Compare Trend</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-xs text-gray-300 italic">No historical terms archived yet. Use the "Archive Term &amp; Reset for New Term" button at the end of any term.</p>
+            {% endif %}
+        </div>
+
+        <!-- Institutional Overview Lists Across Modules -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Enrolled Students Summary List -->
+            <div class="bg-blue-900/90 border-2 border-yellow-400 rounded-3xl shadow-xl overflow-hidden">
+                <div class="p-4 border-b border-blue-800 font-black text-sm uppercase text-yellow-400 flex justify-between items-center">
+                    <span>Enrolled Students Master List ({{ students_list | length }})</span>
+                    <a href="/students" class="tactile-btn bg-yellow-400 text-blue-950 text-[10px] px-3 py-1 rounded-lg font-black uppercase">Manage</a>
+                </div>
+                <div class="overflow-x-auto max-h-64">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-blue-950 text-yellow-300 uppercase text-[10px] sticky top-0">
+                            <tr>
+                                <th class="py-2.5 px-3">ID</th>
+                                <th class="py-2.5 px-3">Name</th>
+                                <th class="py-2.5 px-3">Class</th>
+                                <th class="py-2.5 px-3">Stream</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-blue-800">
+                            {% for s in students_list %}
+                            <tr class="hover:bg-blue-800/50">
+                                <td class="py-2 px-3 font-mono text-yellow-400 font-bold">{{ s.id }}</td>
+                                <td class="py-2 px-3 font-bold uppercase">{{ s.name }}</td>
+                                <td class="py-2 px-3">{{ s.class }}</td>
+                                <td class="py-2 px-3">{{ s.stream }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="p-4 text-center text-gray-300 italic">No students registered yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Staff Register Summary List -->
+            <div class="bg-blue-900/90 border-2 border-yellow-400 rounded-3xl shadow-xl overflow-hidden">
+                <div class="p-4 border-b border-blue-800 font-black text-sm uppercase text-yellow-400 flex justify-between items-center">
+                    <span>Staff &amp; Personnel Directory ({{ staff_list | length }})</span>
+                    <a href="/staff" class="tactile-btn bg-yellow-400 text-blue-950 text-[10px] px-3 py-1 rounded-lg font-black uppercase">Manage</a>
+                </div>
+                <div class="overflow-x-auto max-h-64">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-blue-950 text-yellow-300 uppercase text-[10px] sticky top-0">
+                            <tr>
+                                <th class="py-2.5 px-3">Staff Name</th>
+                                <th class="py-2.5 px-3">Role / Title</th>
+                                <th class="py-2.5 px-3">Subject</th>
+                                <th class="py-2.5 px-3">Phone</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-blue-800">
+                            {% for st in staff_list %}
+                            <tr class="hover:bg-blue-800/50">
+                                <td class="py-2 px-3 font-bold uppercase text-yellow-400">{{ st.name }}</td>
+                                <td class="py-2 px-3">{{ st.role }}</td>
+                                <td class="py-2 px-3">{{ st.subject }}</td>
+                                <td class="py-2 px-3 font-mono">{{ st.phone }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="p-4 text-center text-gray-300 italic">No staff registered yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Parents & Guardians Summary List -->
+        <div class="bg-blue-900/90 border-2 border-yellow-400 rounded-3xl shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-blue-800 font-black text-sm uppercase text-yellow-400 flex justify-between items-center">
+                <span>Parents &amp; Guardians Contacts Directory ({{ parents_list | length }})</span>
+                <a href="/parents" class="tactile-btn bg-yellow-400 text-blue-950 text-[10px] px-3 py-1 rounded-lg font-black uppercase">Manage</a>
+            </div>
+            <div class="overflow-x-auto max-h-64">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-blue-950 text-yellow-300 uppercase text-[10px] sticky top-0">
+                        <tr>
+                            <th class="py-2.5 px-4">Parent Name</th>
+                            <th class="py-2.5 px-4">Phone</th>
+                            <th class="py-2.5 px-4">Student Name</th>
+                            <th class="py-2.5 px-4">Class</th>
+                            <th class="py-2.5 px-4">Email</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-800">
+                        {% for p in parents_list %}
+                        <tr class="hover:bg-blue-800/50">
+                            <td class="py-2.5 px-4 font-bold uppercase text-yellow-400">{{ p.parent_name }}</td>
+                            <td class="py-2.5 px-4 font-mono">{{ p.parent_phone }}</td>
+                            <td class="py-2.5 px-4 font-bold uppercase">{{ p.student_name }}</td>
+                            <td class="py-2.5 px-4">{{ p.class }}</td>
+                            <td class="py-2.5 px-4 text-gray-200">{{ p.email or 'N/A' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="p-4 text-center text-gray-300 italic">No parent contacts linked yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

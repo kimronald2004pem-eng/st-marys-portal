@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Academic Reports - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine & Offline QRCode Library -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/qrcode.min.js') }}"></script>
+    <style>
+        @page { size: A4 portrait; margin: 4mm; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; padding: 0; }
+            .report-card-page {
+                page-break-after: always;
+                break-after: page;
+                height: 98vh;
+                box-sizing: border-box;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                box-shadow: none !important;
+                border: 2px solid #1e3a8a !important;
+            }
+            .report-card-page:last-child {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+            }
+        }
+        body { background: #0f172a; font-family: system-ui, -apple-system, sans-serif; }
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen py-4 flex flex-col items-center font-sans">
+
+    <!-- Top Action Bar (Hidden on Print) -->
+    <div class="no-print mb-4 flex gap-3 items-center bg-blue-900/90 p-4 rounded-3xl shadow-xl border-2 border-yellow-400 max-w-4xl w-full justify-between">
+        <a href="/reports" class="tactile-btn bg-blue-800 hover:bg-blue-700 border border-yellow-400 text-yellow-300 text-xs px-5 py-2.5 rounded-xl font-black uppercase">&larr; Back to Reports Hub</a>
+        <div class="text-xs font-black text-yellow-400 uppercase tracking-wider">
+            Batch Print Mode: <span class="text-white underline">{{ target_class }}</span> (Total: {{ students_data|length }} Reports)
+        </div>
+        <button onclick="window.print();" class="tactile-btn bg-emerald-700 hover:bg-emerald-600 border border-yellow-400 text-white text-xs px-6 py-2.5 rounded-xl font-black uppercase shadow">🖨️ Print Batch Reports</button>
+    </div>
+
+    <!-- BATCH LOOP CONTAINER -->
+    <div class="w-full max-w-4xl space-y-6">
+        {% for item in students_data %}
+        <div class="report-card-page bg-white text-blue-950 rounded-3xl shadow-2xl p-4 border-2 border-yellow-400 mb-6">
+            {% set student = item.student %}
+            {% set report = item.report %}
+            {% set is_alevel = item.is_alevel %}
+            {% include 'report_card_body.html' %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Generate unique QR codes for every card in the batch loop
+            document.querySelectorAll('.qr-code-box').forEach(function (el, index) {
+                if (!el.hasChildNodes()) {
+                    el.id = 'qrcode-batch-' + index;
+                    el.style.width = "38px";
+                    el.style.height = "38px";
+                    el.style.overflow = "hidden";
+                    
+                    const textData = el.getAttribute('data-qr') || 'SMHS ZIROOBWE';
+                    try {
+                        new QRCode(el, {
+                            text: textData,
+                            width: 38,
+                            height: 38,
+                            colorDark: "#1e3a8a",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    } catch (e) {
+                        el.innerHTML = '<div style="font-size:7px; font-weight:bold; color:#1e3a8a; text-align:center; padding-top:10px;">VERIFIED</div>';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

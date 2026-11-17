@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SMAHIZ Management System</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="w-screen h-screen m-0 p-0 overflow-hidden font-sans bg-blue-950 text-gray-100">
+
+    <div class="w-full h-full grid grid-cols-1 lg:grid-cols-12 bg-gradient-to-tr from-blue-950 via-blue-900 to-red-950">
+        
+        <!-- LEFT SIDE: Full Immersive Visual Banner (7 Cols) -->
+        <div class="relative lg:col-span-7 h-full p-8 md:p-14 flex flex-col justify-between overflow-hidden">
+            <!-- Background Image with Rich Color Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="{{ url_for('static', filename='images/marys.jpg') }}" alt="School Background" class="w-full h-full object-cover scale-105 filter brightness-90 contrast-110">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-900/80 to-red-950/80 mix-blend-multiply"></div>
+                <div class="absolute inset-0 bg-blue-950/40 backdrop-blur-[1px]"></div>
+            </div>
+
+            <!-- Top Header: Large Badge & Big School Title -->
+            <div class="relative z-10 flex items-center space-x-5">
+                <div class="bg-blue-950/80 p-2.5 rounded-2xl backdrop-blur-md border-2 border-yellow-400 shadow-2xl">
+                    <img src="{{ url_for('static', filename='images/school_badge.jpg') }}" alt="Badge" class="w-20 h-20 object-contain drop-shadow-md">
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-black tracking-wider text-yellow-400 uppercase drop-shadow-lg">ST. MARY'S HIGH SCHOOL</h2>
+                    <p class="text-xs md:text-sm font-black text-white tracking-widest uppercase drop-shadow">Ziroobwe</p>
+                </div>
+            </div>
+
+            <!-- Center Content: Welcome & Motto -->
+            <div class="relative z-10 my-auto space-y-5 max-w-2xl py-6">
+                <span class="bg-yellow-400 text-blue-950 border-2 border-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
+                    Official Portal 2026
+                </span>
+                <h1 class="text-3xl md:text-5xl font-black uppercase leading-tight tracking-wide text-white drop-shadow-2xl">
+                    WELCOME TO SMAHIZ MANAGEMENT SYSTEM
+                </h1>
+                <p class="text-yellow-300 font-serif italic text-xl md:text-2xl font-black tracking-wider drop-shadow-md">
+                    "Ever the Best"
+                </p>
+                <p class="text-sm md:text-base text-gray-200 leading-relaxed font-medium drop-shadow">
+                    Empowering academic excellence, secure offline data administration, and seamless institutional tracking across all departments with ultimate precision.
+                </p>
+            </div>
+
+            <!-- Footer Note -->
+            <div class="relative z-10 text-xs text-yellow-300 font-mono font-bold tracking-wider">
+                &copy; 2026 SMAHIZ &bull; All Rights Reserved &bull; St. Mary's High School Ziroobwe
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE: Colorful, Gorgeous Login Card (5 Cols) -->
+        <div class="lg:col-span-5 h-full bg-blue-950 p-8 md:p-12 flex flex-col justify-center border-l-2 border-yellow-400/40 shadow-2xl relative overflow-hidden">
+            
+            <!-- Decorative Glow Background Elements -->
+            <div class="absolute -top-24 -right-24 w-72 h-72 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-red-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 bg-blue-900/90 backdrop-blur-xl border-2 border-yellow-400 p-8 rounded-3xl shadow-2xl space-y-6">
+                
+                <div class="text-center space-y-1">
+                    <h3 class="text-xl font-black text-yellow-400 uppercase tracking-wider">Staff Portal Access</h3>
+                    <p class="text-xs text-gray-200 font-bold">Select your role and enter your secure credentials</p>
+                </div>
+
+                <!-- Flash Messages / Errors -->
+                {% if error %}
+                <div class="bg-red-900 border-2 border-yellow-400 p-3 text-white text-xs rounded-xl font-bold shadow-lg">
+                    ⚠️ {{ error }}
+                </div>
+                {% endif %}
+                {% if success %}
+                <div class="bg-emerald-800 border-2 border-yellow-400 p-3 text-white text-xs rounded-xl font-bold shadow-lg">
+                    ✅ {{ success }}
+                </div>
+                {% endif %}
+
+                <!-- Form Toggle Tabs -->
+                <div class="flex bg-blue-950 p-1 rounded-2xl text-xs font-black border border-yellow-400/50">
+                    <button onclick="switchTab('login')" id="tab-login" class="tactile-btn flex-1 py-2.5 rounded-xl transition-all duration-300 bg-yellow-400 text-blue-950 shadow-lg uppercase">Sign In</button>
+                    <button onclick="switchTab('update')" id="tab-update" class="tactile-btn flex-1 py-2.5 rounded-xl transition-all duration-300 text-yellow-300 hover:text-white uppercase">Change PIN</button>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <form id="form-login" method="POST" action="/" class="space-y-4">
+                    <input type="hidden" name="action" value="login">
+                    
+                    <div>
+                        <label class="block text-xs font-black text-yellow-300 uppercase tracking-wider mb-1.5">Select Role / Position</label>
+                        <select name="username" required class="w-full bg-blue-950 border border-yellow-400/60 text-white rounded-xl px-4 py-3 text-xs font-bold focus:ring-2 focus:ring-yellow-400 focus:outline-none">
+                            <option value="" disabled selected class="bg-blue-950 text-gray-400">-- Choose Your Role --</option>
+                            <option value="headteacher" class="bg-blue-950 text-white font-bold">Head Teacher</option>
+                            <option value="deputy" class="bg-blue-950 text-white font-bold">Deputy Head Teacher</option>
+                            <option value="dos" class="bg-blue-950 text-white font-bold">Director of Studies (DOS)</option>
+                            <option value="bursar" class="bg-blue-950 text-white font-bold">School Bursar / Teacher</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-yellow-300 uppercase tracking-wider mb-1.5">Password or PIN</label>
+                        <div class="relative">
+                            <input type="password" id="login_password" name="password" required placeholder="Enter password or PIN..." class="w-full bg-blue-950 border border-yellow-400/60 text-white placeholder-gray-400 rounded-xl px-4 py-3 text-xs font-bold focus:ring-2 focus:ring-yellow-400 focus:outline-none pr-12">
+                            <button type="button" onclick="togglePassword('login_password', this)" class="absolute right-3 top-2.5 text-yellow-300 hover:text-white text-sm font-bold focus:outline-none bg-blue-900 px-2.5 py-1 rounded-lg border border-yellow-400/40">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="tactile-btn w-full bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-xl">
+                        Login to System &rarr;
+                    </button>
+                </form>
+
+                <!-- CHANGE PASSWORD / PIN FORM -->
+                <form id="form-update" method="POST" action="/" class="space-y-4 hidden">
+                    <input type="hidden" name="action" value="change_credential">
+                    
+                    <div>
+                        <label class="block text-xs font-black text-yellow-300 uppercase tracking-wider mb-1.5">Select Role / Account</label>
+                        <select name="username" required class="w-full bg-blue-950 border border-yellow-400/60 text-white rounded-xl px-4 py-3 text-xs font-bold focus:ring-2 focus:ring-yellow-400 focus:outline-none">
+                            <option value="" disabled selected class="bg-blue-950 text-gray-400">-- Choose Role --</option>
+                            <option value="headteacher" class="bg-blue-950 text-white font-bold">Head Teacher</option>
+                            <option value="deputy" class="bg-blue-950 text-white font-bold">Deputy Head Teacher</option>
+                            <option value="dos" class="bg-blue-950 text-white font-bold">Director of Studies (DOS)</option>
+                            <option value="bursar" class="bg-blue-950 text-white font-bold">School Bursar / Teacher</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-yellow-300 uppercase tracking-wider mb-1.5">New Password or PIN</label>
+                        <div class="relative">
+                            <input type="password" id="new_password" name="new_password" required placeholder="Enter new password or PIN..." class="w-full bg-blue-950 border border-yellow-400/60 text-white placeholder-gray-400 rounded-xl px-4 py-3 text-xs font-bold focus:ring-2 focus:ring-yellow-400 focus:outline-none pr-12">
+                            <button type="button" onclick="togglePassword('new_password', this)" class="absolute right-3 top-2.5 text-yellow-300 hover:text-white text-sm font-bold focus:outline-none bg-blue-900 px-2.5 py-1 rounded-lg border border-yellow-400/40">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="tactile-btn w-full bg-red-600 hover:bg-red-500 text-yellow-300 border border-yellow-400 font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-xl">
+                        Update Password / PIN
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript for Tab Switching & Password Visibility -->
+    <script>
+        function switchTab(tab) {
+            const loginForm = document.getElementById('form-login');
+            const updateForm = document.getElementById('form-update');
+            const loginTab = document.getElementById('tab-login');
+            const updateTab = document.getElementById('tab-update');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                updateForm.classList.add('hidden');
+                loginTab.classList.add('bg-yellow-400', 'text-blue-950', 'shadow-lg');
+                loginTab.classList.remove('text-yellow-300');
+                updateTab.classList.remove('bg-yellow-400', 'text-blue-950', 'shadow-lg');
+                updateTab.classList.add('text-yellow-300');
+            } else {
+                updateForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                updateTab.classList.add('bg-yellow-400', 'text-blue-950', 'shadow-lg');
+                updateTab.classList.remove('text-yellow-300');
+                loginTab.classList.remove('bg-yellow-400', 'text-blue-950', 'shadow-lg');
+                loginTab.classList.add('text-yellow-300');
+            }
+        }
+
+        function togglePassword(fieldId, btn) {
+            const field = document.getElementById(fieldId);
+            if (field.type === 'password') {
+                field.type = 'text';
+                btn.textContent = '🔒';
+            } else {
+                field.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+    </script>
+</body>
+</html>

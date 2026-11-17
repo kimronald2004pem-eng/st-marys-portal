@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Academic Reports - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine & Offline QRCode Library -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/qrcode.min.js') }}"></script>
+    <style>
+        @page { size: A4 portrait; margin: 5mm; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; padding: 0; }
+            .page-break { 
+                page-break-after: always; 
+                break-after: page; 
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .page-break:last-child { page-break-after: avoid; break-after: avoid; }
+            .report-card { 
+                border: 2px solid #1e3a8a !important; 
+                box-shadow: none !important; 
+                width: 100% !important; 
+                margin: 0 !important; 
+                padding: 10px !important; 
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            table, .bar-graph-box, .remarks-box, .signatures-box {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+        }
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen py-6 flex flex-col items-center font-sans">
+
+    <!-- Top Action Bar (Hidden on Print) -->
+    <div class="no-print mb-6 flex gap-4 items-center bg-blue-900/90 p-4 rounded-3xl shadow-xl border-2 border-yellow-400 max-w-4xl w-full justify-between">
+        <a href="/reports" class="tactile-btn bg-blue-800 hover:bg-blue-700 border border-yellow-400 text-yellow-300 text-xs px-5 py-2.5 rounded-xl font-black uppercase">&larr; Back to Reports Hub</a>
+        <h2 class="text-xs font-black text-yellow-400 uppercase tracking-wider">Batch Printing Mode ({{ reports_data|length }} Reports)</h2>
+        <button onclick="window.print();" class="tactile-btn bg-emerald-700 hover:bg-emerald-600 border border-yellow-400 text-white text-xs px-6 py-2.5 rounded-xl font-black uppercase shadow">🖨️ Print All Reports</button>
+    </div>
+
+    <div class="max-w-4xl w-full space-y-6">
+        {% for data in reports_data %}
+        {% set student = data.student %}
+        {% set report = data.report %}
+        {% set is_alevel = data.is_alevel %}
+
+        <div class="page-break">
+            <div class="report-card max-w-4xl w-full bg-white text-blue-950 rounded-3xl shadow-2xl p-5 border-2 border-blue-900 space-y-3 mx-auto">
+                
+                <!-- 1. SCHOOL HEADER + QR CODE -->
+                <div class="flex justify-between items-center border-b-2 border-blue-900 pb-2">
+                    <div class="flex items-center space-x-3">
+                        <img src="{{ url_for('static', filename='images/school_badge.jpg') }}" alt="Badge" class="w-14 h-14 object-contain">
+                        <div>
+                            <h1 class="text-lg font-black text-blue-950 uppercase tracking-wide">ST. MARY'S HIGH SCHOOL ZIROOBWE</h1>
+                            <p class="text-[10px] text-gray-700 font-bold">P.O. Box 7481, Kampala, Uganda | Tel: +256 747 515 338</p>
+                            <p class="text-[10px] text-red-700 font-black italic">Motto: "Ever the Best" &bull; {{ 'A-LEVEL (UACE)' if is_alevel else 'O-LEVEL (UCE)' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right">
+                            <span class="bg-blue-950 text-yellow-400 text-[8px] font-black px-2.5 py-0.5 rounded uppercase tracking-wider block shadow">VERIFIED TRANSCRIPT</span>
+                            <p class="text-[10px] font-mono font-black text-blue-950 mt-0.5">{{ student.id }}</p>
+                        </div>
+                        <div class="p-0.5 bg-white border border-blue-900 rounded-xl shadow-sm">
+                            <div class="qr-code-box" data-qr="SMHS ZIROOBWE | ID: {{ student.id }} | NAME: {{ student.name }} | CLASS: {{ student.class }} {{ student.stream }} | TERM: {{ report.term }} | AVG: {{ report.term_avg }}% ({{ report.overall_term_grade }})"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. REPORT BANNER -->
+                <div class="bg-blue-950 text-yellow-300 text-center py-1.5 rounded-xl text-xs font-black uppercase tracking-widest shadow border border-yellow-400/40">
+                    {{ report.report_title }} &mdash; {{ report.term }}
+                </div>
+
+                <!-- 3. STUDENT BIO GRID + PASSPORT PHOTO -->
+                <div class="flex justify-between items-center bg-blue-50/90 p-2.5 rounded-2xl border border-blue-300 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs flex-1">
+                        <div>
+                            <span class="text-[9px] text-gray-600 block uppercase font-extrabold">Student Name:</span>
+                            <strong class="text-blue-950 uppercase text-xs font-black">{{ student.name }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-gray-600 block uppercase font-extrabold">Student ID:</span>
+                            <strong class="font-mono text-blue-900 font-bold">{{ student.id }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-gray-600 block uppercase font-extrabold">Class &amp; Stream:</span>
+                            <strong class="text-blue-950 font-bold">{{ student.class }} {{ student.stream }}</strong>
+                            {% if student.combination %}<span class="block text-[9px] text-red-700 font-bold">({{ student.combination }})</span>{% endif %}
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-gray-600 block uppercase font-extrabold">Gender / Residence:</span>
+                            <strong class="text-blue-950 font-bold">{{ student.gender }} / {{ student.residential }}</strong>
+                        </div>
+                        <div class="col-span-2 md:col-span-4 border-t border-blue-200 pt-1 flex flex-wrap justify-between items-center text-[10px]">
+                            <span>Fees Balance: <strong class="{% if report.fees.balance > 0 %}text-red-600{% else %}text-emerald-700{% endif %} font-black">{{ report.fees.label }}</strong></span>
+                            <span>Term Ended On: <strong class="text-blue-950 font-bold">{{ report.ended_on }}</strong> &bull; Next Term Begins: <strong class="text-blue-950 font-bold">{{ report.begins_on }}</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="w-14 h-18 rounded-xl border-2 border-blue-900 overflow-hidden bg-white shadow flex-shrink-0 flex items-center justify-center">
+                        <img src="{{ url_for('static', filename='uploads/' + (student.photo or 'default_avatar.png')) }}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ student.name | urlencode }}&background=1e3a8a&color=fff&bold=true';" alt="{{ student.name }}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+                <!-- 4. MARKS TABLE -->
+                <div class="overflow-x-auto rounded-xl border border-blue-200">
+                    <table class="w-full text-left border-collapse text-[10px] table-fixed">
+                        <thead>
+                            <tr class="bg-blue-950 text-white text-center uppercase text-[8px]">
+                                <th class="py-1.5 px-0.5 border border-blue-800 w-6" rowspan="2">#</th>
+                                <th class="py-1.5 px-2 border border-blue-800 text-left w-32" rowspan="2">Subject</th>
+                                <th class="py-0.5 px-0.5 border border-purple-700 bg-purple-900" colspan="{{ report.active_cs|length }}">Continuous Assessment</th>
+                                <th class="py-1.5 px-0.5 border border-blue-800 bg-blue-900 w-12" rowspan="2">CA (20%)</th>
+                                <th class="py-0.5 px-0.5 border border-blue-800" colspan="3">Mid-Term (80%)</th>
+                                <th class="py-1.5 px-0.5 border border-blue-800 w-12" rowspan="2">MOT %</th>
+                                <th class="py-1.5 px-0.5 border border-blue-800 w-9" rowspan="2">Grd</th>
+                                <th class="py-0.5 px-0.5 border border-blue-800" colspan="3">End-Term (80%)</th>
+                                <th class="py-1.5 px-0.5 border border-blue-800 bg-blue-900 w-12" rowspan="2">EOT %</th>
+                                <th class="py-1.5 px-0.5 border border-blue-800 bg-blue-900 w-9" rowspan="2">Grd</th>
+                                <th class="py-1.5 px-0.5 border border-blue-800 w-10" rowspan="2">Init.</th>
+                            </tr>
+                            <tr class="bg-blue-900 text-yellow-300 text-center uppercase text-[7px]">
+                                {% for cs_key in report.active_cs %}
+                                <th class="py-0.5 px-0.2 border border-purple-700 bg-purple-950">{{ cs_key }}</th>
+                                {% endfor %}
+                                <th class="py-0.5 px-0.2 border border-blue-800">P1</th>
+                                <th class="py-0.5 px-0.2 border border-blue-800">P2</th>
+                                <th class="py-0.5 px-0.2 border border-blue-800">P3</th>
+                                <th class="py-0.5 px-0.2 border border-blue-800">P1</th>
+                                <th class="py-0.5 px-0.2 border border-blue-800">P2</th>
+                                <th class="py-0.5 px-0.2 border border-blue-800">P3</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-blue-200 text-center font-medium">
+                            {% for sub in report.subjects %}
+                            <tr class="hover:bg-blue-50/50">
+                                <td class="py-1 px-0.5 border border-blue-200 font-bold text-blue-950">{{ loop.index }}</td>
+                                <td class="py-1 px-2 border border-blue-200 text-left font-bold text-blue-950 truncate" title="{{ sub.name }}">{{ sub.name }}</td>
+                                {% for cs_key in report.active_cs %}
+                                <td class="py-1 px-0.2 border border-blue-200 font-mono text-[9px]">{{ sub.cs_map.get(cs_key) if sub.cs_map.get(cs_key) is not none else '-' }}</td>
+                                {% endfor %}
+                                <td class="py-1 px-0.5 border border-blue-200 font-mono font-bold text-purple-900 bg-purple-50/50">{{ sub.ca }}</td>
+                                {% for idx in range(3) %}
+                                <td class="py-1 px-0.2 border border-blue-200 font-mono text-[9px]">{% if idx < sub.papers|length %}{{ sub.papers[idx].mid }}{% else %}-{% endif %}</td>
+                                {% endfor %}
+                                <td class="py-1 px-0.5 border border-blue-200 font-mono font-bold text-blue-900">{{ sub.mot_total }}</td>
+                                <td class="py-1 px-0.5 border border-blue-200 font-bold text-blue-950">{{ sub.mot_grade }}</td>
+                                {% for idx in range(3) %}
+                                <td class="py-1 px-0.2 border border-blue-200 font-mono text-[9px]">{% if idx < sub.papers|length %}{{ sub.papers[idx].eot }}{% else %}-{% endif %}</td>
+                                {% endfor %}
+                                <td class="py-1 px-0.5 border border-blue-200 font-mono font-black text-blue-950 bg-blue-50">{{ sub.eot_total }}</td>
+                                <td class="py-1 px-0.5 border border-blue-200 font-black bg-blue-100 text-blue-950">{{ sub.eot_grade }}</td>
+                                <td class="py-1 px-0.5 border border-blue-200 font-mono text-[9px] text-gray-700 font-bold">{{ sub.initials }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 5. SUMMARY BAR -->
+                <div class="bg-blue-900 text-yellow-300 p-2 rounded-xl flex flex-wrap justify-between items-center text-[11px] font-black border border-yellow-400/40 shadow-sm gap-2">
+                    <span>Mid-Term Avg: <strong class="font-mono text-white underline">{{ report.exam_avg }}%</strong></span>
+                    <span class="bg-emerald-800 border border-emerald-400 text-white px-3 py-1 rounded-xl shadow-sm">
+                        End-Term Avg: <strong class="font-mono">{{ report.term_avg }}%</strong> &bull; Grade {{ report.overall_term_grade }}
+                    </span>
+                    {% if is_alevel %}
+                    <span>Principal Points: <strong class="font-mono text-white underline">{{ report.total_points }} / 20</strong></span>
+                    {% else %}
+                    <span>Conduct: <strong class="text-white">{{ report.conduct }}</strong></span>
+                    {% endif %}
+                </div>
+
+                <!-- 6. BAR GRAPH ANALYSIS -->
+                {% if report.subjects %}
+                <div class="bar-graph-box bg-white border border-blue-300 rounded-2xl p-2.5 shadow-sm">
+                    <div class="flex justify-between items-center mb-1">
+                        <h4 class="text-[9px] font-black text-blue-950 uppercase tracking-wider">Subject Performance Bar Graph Analysis (Overall EOT %)</h4>
+                        <div class="flex items-center space-x-2 text-[8px] font-bold">
+                            <span class="flex items-center"><span class="w-2 h-2 bg-emerald-600 inline-block mr-0.5 rounded-sm"></span>80%+</span>
+                            <span class="flex items-center"><span class="w-2 h-2 bg-blue-700 inline-block mr-0.5 rounded-sm"></span>60%+</span>
+                            <span class="flex items-center"><span class="w-2 h-2 bg-amber-500 inline-block mr-0.5 rounded-sm"></span>50%+</span>
+                            <span class="flex items-center"><span class="w-2 h-2 bg-red-600 inline-block mr-0.5 rounded-sm"></span>&lt;50%</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-stretch h-24 pt-1 pb-0.5">
+                        <div class="flex flex-col justify-between text-[8px] font-mono font-bold text-gray-500 pr-1.5 border-r border-blue-300 text-right w-8 select-none">
+                            <span>100%</span><span>50%</span><span>0%</span>
+                        </div>
+                        <div class="flex-1 relative flex items-end justify-around px-2 border-b border-blue-300">
+                            <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                                <div class="border-t border-dashed border-blue-100 w-full"></div>
+                                <div class="border-t border-dashed border-blue-100 w-full"></div>
+                                <div></div>
+                            </div>
+                            {% for sub in report.subjects %}
+                            {% set pct = sub.eot_total|float %}
+                            {% set bar_color = 'bg-emerald-600' if pct >= 80 else ('bg-blue-700' if pct >= 60 else ('bg-amber-500' if pct >= 50 else 'bg-red-600')) %}
+                            <div class="relative z-10 flex flex-col items-center h-full justify-end flex-1 max-w-[48px]">
+                                <span class="text-[7px] font-mono font-black text-blue-950 mb-0.5">{{ pct|round(0)|int }}%</span>
+                                <div class="w-5 md:w-6 {{ bar_color }} rounded-t shadow-sm" style="height: {{ [pct, 100]|min }}%;"></div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="flex pl-9 pr-2 pt-0.5 justify-around text-center">
+                        {% for sub in report.subjects %}
+                        <div class="flex-1 max-w-[48px] text-[7px] font-black text-blue-950 uppercase truncate px-0.2" title="{{ sub.name }}">{{ sub.name[:7] }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 7. REMARKS -->
+                <div class="remarks-box grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
+                    <div class="bg-blue-50/70 p-2.5 rounded-xl border border-blue-200">
+                        <span class="font-black text-blue-950 uppercase text-[9px] block mb-0.5">Class Teacher's Remark:</span>
+                        <p class="text-gray-700 italic text-[11px] font-medium">"{{ report.class_teacher_remark }}"</p>
+                    </div>
+                    <div class="bg-blue-50/70 p-2.5 rounded-xl border border-blue-200">
+                        <span class="font-black text-blue-950 uppercase text-[9px] block mb-0.5">Head Teacher's Remark:</span>
+                        <p class="text-gray-700 italic text-[11px] font-medium">"{{ report.head_teacher_remark }}"</p>
+                    </div>
+                </div>
+
+                <!-- 8. SIGNATURES -->
+                <div class="signatures-box grid grid-cols-3 gap-3 pt-2 text-center text-xs font-bold border-t border-blue-200">
+                    <div><p class="border-b border-dashed border-gray-400 pb-3 mb-0.5">&nbsp;</p><p class="text-gray-600 uppercase text-[8px]">Class Teacher Signature</p></div>
+                    <div><p class="border-b border-dashed border-gray-400 pb-3 mb-0.5">&nbsp;</p><p class="text-gray-600 uppercase text-[8px]">Director of Studies (DOS)</p></div>
+                    <div><p class="border-b border-dashed border-gray-400 pb-3 mb-0.5">&nbsp;</p><p class="text-gray-600 uppercase text-[8px]">Head Teacher Stamp &amp; Signature</p></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('.qr-code-box').forEach(function (el) {
+                new QRCode(el, {
+                    text: el.getAttribute('data-qr') || 'SMHS ZIROOBWE',
+                    width: 48, height: 48,
+                    colorDark: "#1e3a8a", colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            });
+        });
+    </script>
+</body>
+</html>

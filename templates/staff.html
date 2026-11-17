@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Register - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style id="page-orientation-style">
+        @page { size: A4 portrait; margin: 10mm; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-box { border: none !important; box-shadow: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; }
+        }
+        .print-header { display: none; }
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen py-6 flex flex-col items-center font-sans">
+
+    <!-- Top Control Bar (Hidden on print) -->
+    <div class="no-print mb-6 flex flex-wrap gap-3 items-center bg-blue-900/90 p-4 rounded-3xl shadow-xl border-2 border-yellow-400 max-w-7xl w-full justify-between">
+        <div class="flex items-center gap-3">
+            <a href="/dashboard" class="tactile-btn bg-blue-800 hover:bg-blue-700 border border-yellow-400 text-yellow-300 text-xs px-5 py-2.5 rounded-xl font-black uppercase">&larr; Dashboard</a>
+            <span class="text-xs font-bold text-yellow-400 ml-2 uppercase tracking-wide">Orientation:</span>
+            <button onclick="setOrientation('portrait')" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-xs px-4 py-2 rounded-xl font-black uppercase shadow">Portrait</button>
+            <button onclick="setOrientation('landscape')" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-xs px-4 py-2 rounded-xl font-black uppercase shadow">Landscape</button>
+        </div>
+        <button onclick="window.print();" class="tactile-btn bg-emerald-700 hover:bg-emerald-600 border border-yellow-400 text-white text-xs px-5 py-2.5 rounded-xl font-black uppercase shadow">🖨️ Print Staff Register</button>
+    </div>
+
+    <main class="print-box max-w-7xl w-full space-y-6 px-4">
+        
+        <!-- PRINT-ONLY OFFICIAL SCHOOL HEADER -->
+        <div class="print-header">
+            <h1 class="text-xl font-black text-blue-900">ST. MARY'S HIGH SCHOOL ZIROOBWE</h1>
+            <p class="text-xs text-gray-600 font-bold uppercase tracking-wider">OFFICIAL STAFF REGISTER &amp; CONTACTS DIRECTORY</p>
+        </div>
+
+        <!-- Filter & Search (Hidden on print) -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 border-2 border-yellow-400 flex justify-between items-center no-print">
+            <form method="GET" action="/staff" class="flex flex-wrap items-center gap-4 w-full">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-yellow-300 uppercase">Category:</span>
+                    <select name="category" onchange="this.form.submit()" class="border border-yellow-400/60 rounded-xl px-3 py-2 text-xs bg-blue-950 text-white font-bold">
+                        <option value="ALL" {% if cat_filter == 'ALL' %}selected{% endif %}>All Staff</option>
+                        <option value="Staff" {% if cat_filter == 'Staff' %}selected{% endif %}>Teaching Staff</option>
+                        <option value="Non-Teaching" {% if cat_filter == 'Non-Teaching' %}selected{% endif %}>Non-Teaching Staff</option>
+                    </select>
+                </div>
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Search staff name or role..." class="border border-yellow-400/60 rounded-xl px-4 py-2 text-xs w-72 bg-blue-950 text-white font-bold placeholder-gray-400">
+                <button type="submit" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 px-5 py-2 rounded-xl text-xs font-black uppercase shadow">Search</button>
+                <a href="/staff" class="tactile-btn bg-blue-950 text-yellow-300 border border-yellow-400/50 px-4 py-2 rounded-xl text-xs font-black uppercase">Reset</a>
+            </form>
+        </div>
+
+        <!-- Add Staff Form (Hidden on print) -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 md:p-8 border-2 border-yellow-400 no-print space-y-4">
+            <h3 class="font-black text-yellow-400 text-sm uppercase">➕ Register New Staff Member</h3>
+            <form method="POST" action="/staff" class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <input type="hidden" name="action" value="add">
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Full Name</label>
+                    <input type="text" name="staff_name" required class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold uppercase">
+                </div>
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Category</label>
+                    <select name="category" class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold">
+                        <option value="Staff">Teaching Staff</option>
+                        <option value="Non-Teaching">Non-Teaching Staff</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Status</label>
+                    <select name="status" class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold">
+                        <option value="Full Staff">Full Staff</option>
+                        <option value="Part-Time">Part-Time</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Role / Designation</label>
+                    <input type="text" name="role" required placeholder="e.g. Director of Studies" class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold">
+                </div>
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Subject / Department</label>
+                    <select name="subject" class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold">
+                        {% for s in olevel_subjects %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Year Joined (2020 – 2085)</label>
+                    <select name="year_joined" class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold">
+                        {% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Phone Number (Contact)</label>
+                    <input type="text" name="phone" placeholder="+256..." class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold">
+                </div>
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Email Address</label>
+                    <input type="email" name="email" placeholder="name@smhs.ac.ug" class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold">
+                </div>
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Basic Pay (UGX)</label>
+                    <input type="number" name="basic_pay" value="1000000" class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold">
+                </div>
+                <div>
+                    <label class="font-bold text-yellow-300 block mb-1">Allowance (UGX)</label>
+                    <input type="number" name="allowance" value="200000" class="w-full border border-yellow-400/60 rounded-xl px-3 py-2.5 bg-blue-950 text-white font-bold">
+                </div>
+                <div class="md:col-span-2 flex items-end pt-2">
+                    <button type="submit" class="tactile-btn w-full bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black py-3 rounded-xl uppercase tracking-wider shadow-lg">Save Staff Record</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Staff Table (Showing Contacts & Initials) -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl border-2 border-yellow-400 overflow-hidden">
+            <div class="p-5 border-b border-blue-800 font-black text-sm uppercase text-yellow-400 no-print">Staff Directory &amp; Contacts</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-blue-950 uppercase border-b border-blue-800 text-yellow-300 text-[10px]">
+                            <th class="py-3 px-4">Staff ID</th>
+                            <th class="py-3 px-4">Staff Name</th>
+                            <th class="py-3 px-4">Role / Subject</th>
+                            <th class="py-3 px-4">Category</th>
+                            <th class="py-3 px-4">Contacts (Phone / Email)</th>
+                            <th class="py-3 px-4">Year Joined</th>
+                            <th class="py-3 px-4 text-right no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-800">
+                        {% for t in staff_list %}
+                        <tr class="hover:bg-blue-800/50">
+                            <td class="py-3 px-4 font-mono font-bold text-yellow-400">{{ t.id }}</td>
+                            <td class="py-3 px-4 font-bold uppercase text-white">{{ t.name }}</td>
+                            <td class="py-3 px-4">
+                                <strong class="text-yellow-300 block">{{ t.role }}</strong>
+                                <span class="text-[10px] text-gray-300">{{ t.subject }}</span>
+                            </td>
+                            <td class="py-3 px-4"><span class="bg-blue-950 border border-yellow-400 text-yellow-300 px-2.5 py-1 rounded-lg font-bold text-[10px]">{{ t.status }}</span></td>
+                            <td class="py-3 px-4 font-mono">
+                                <span class="block text-emerald-300 font-bold">{{ t.phone or 'N/A' }}</span>
+                                <span class="text-[10px] text-gray-300">{{ t.email or 'N/A' }}</span>
+                            </td>
+                            <td class="py-3 px-4 font-bold text-white">{{ t.year_joined }}</td>
+                            <td class="py-3 px-4 text-right no-print">
+                                <form method="POST" action="/staff" onsubmit="return confirm('Delete staff member?');">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="staff_id" value="{{ t.id }}">
+                                    <button type="submit" class="tactile-btn bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-black uppercase shadow">Del</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-gray-300 text-sm italic">No staff members registered yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function setOrientation(mode) {
+            const styleEl = document.getElementById('page-orientation-style');
+            if (mode === 'landscape') {
+                styleEl.innerHTML = `@page { size: A4 landscape; margin: 10mm; } @media print { .no-print { display: none !important; } body { background: white !important; } .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; } }`;
+                alert("Print orientation set to LANDSCAPE.");
+            } else {
+                styleEl.innerHTML = `@page { size: A4 portrait; margin: 10mm; } @media print { .no-print { display: none !important; } body { background: white !important; } .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; } }`;
+                alert("Print orientation set to PORTRAIT.");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll & Advances System - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen font-sans">
+    <header class="bg-gradient-to-r from-blue-900 to-red-950 text-white shadow-2xl border-b-4 border-yellow-400">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+            <div>
+                <h1 class="font-black text-lg md:text-xl text-yellow-400 tracking-wider">ST MARY'S HIGH SCHOOL — Payroll, Advances &amp; HR Sub-Module</h1>
+                <p class="text-xs text-gray-200 font-mono">Manage Staff Salaries, Salary Advances &amp; Deductions Offline</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="window.print();" class="tactile-btn bg-emerald-700 hover:bg-emerald-600 border border-yellow-400 text-white text-xs px-5 py-2.5 rounded-xl font-black uppercase shadow">🖨️ Print / Save PDF</button>
+                <a href="/dashboard" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-xs px-5 py-2.5 rounded-xl font-black uppercase shadow-lg">&larr; Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        
+        <!-- Flash Messages -->
+        {% if msg %}
+        <div class="bg-emerald-800 border-2 border-yellow-400 text-white p-4 rounded-2xl shadow-lg font-bold text-xs" role="alert">
+            ✅ {{ msg }}
+        </div>
+        {% endif %}
+
+        <!-- SUB-MODULE 1: LOG ADVANCE / EDIT STAFF FINANCIALS -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 md:p-8 border-2 border-yellow-400 space-y-4">
+            <h2 class="font-black text-yellow-400 text-sm uppercase border-b border-blue-800 pb-3">➕ Record Advance or Update Staff Financial Parameters</h2>
+            <form action="/payroll" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <input type="hidden" name="action" value="update_financials">
+                <div>
+                    <label class="block text-xs font-bold text-yellow-300 mb-1">Select Staff Member</label>
+                    <select name="staff_id" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl p-2.5 text-white font-bold" required>
+                        {% for t in staff_list %}
+                        <option value="{{ t.id }}">{{ t.name }} ({{ t.id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-yellow-300 mb-1">Advance Amount (UGX)</label>
+                    <input type="number" name="advance" placeholder="e.g. 50000" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl p-2.5 text-white font-bold" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-yellow-300 mb-1">Date Advance Given</label>
+                    <input type="date" name="advance_date" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl p-2.5 text-white font-bold" required>
+                </div>
+                <div class="flex items-end pt-2">
+                    <button type="submit" class="tactile-btn w-full bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black py-3 rounded-xl uppercase tracking-wider shadow-lg">Save Advance / Deduction</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SUB-MODULE 2: MONTHLY PAYROLL SCHEDULE TABLE -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl border-2 border-yellow-400 overflow-hidden">
+            <div class="p-6 bg-blue-950 border-b border-blue-800 flex justify-between items-center">
+                <h2 class="font-black text-yellow-400 text-sm uppercase">Monthly Payroll &amp; Contact Schedule</h2>
+                <span class="text-xs font-black bg-red-600 text-yellow-300 px-4 py-1.5 rounded-full border border-yellow-400 uppercase tracking-wider">Active Term: {{ schedule.term }} {{ schedule.year }}</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-blue-950 uppercase border-b border-blue-800 text-yellow-300 text-[10px]">
+                            <th class="py-3 px-4">ID &amp; Contact</th>
+                            <th class="py-3 px-4">Name &amp; Role</th>
+                            <th class="py-3 px-4 text-right">Basic Pay</th>
+                            <th class="py-3 px-4 text-right">Allowance</th>
+                            <th class="py-3 px-4 text-right">Advance &amp; Date</th>
+                            <th class="py-3 px-4 text-right bg-blue-950/80">Net Pay</th>
+                            <th class="py-3 px-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-800">
+                        {% for t in staff_list %}
+                        {% set basic = t.basic_pay|default(1000000, true)|float %}
+                        {% set allowance = t.allowance|default(200000, true)|float %}
+                        {% set advance = t.advance|default(0, true)|float %}
+                        {% set net = basic + allowance - advance %}
+                        <tr class="hover:bg-blue-800/50">
+                            <td class="py-3 px-4">
+                                <span class="font-mono text-yellow-400 font-bold block">{{ t.id }}</span>
+                                <span class="text-[10px] text-gray-300 font-mono">📞 {{ t.phone|default('N/A') }}</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="font-bold text-white uppercase block">{{ t.name }}</span>
+                                <span class="text-[10px] bg-blue-950 border border-yellow-400/50 px-2 py-0.5 rounded-md text-yellow-300 font-bold">{{ t.role }} ({{ t.category|default('Staff') }})</span>
+                            </td>
+                            <td class="py-3 px-4 text-right font-mono text-white">UGX {{ "{:,.0f}".format(basic) }}</td>
+                            <td class="py-3 px-4 text-right font-mono text-white">UGX {{ "{:,.0f}".format(allowance) }}</td>
+                            <td class="py-3 px-4 text-right font-mono">
+                                <span class="text-red-400 font-bold block">-UGX {{ "{:,.0f}".format(advance) }}</span>
+                                <span class="text-[10px] text-gray-300">Given: {{ t.advance_date|default('None') }}</span>
+                            </td>
+                            <td class="py-3 px-4 text-right font-mono font-bold text-yellow-400 bg-blue-950/50 text-sm">UGX {{ "{:,.0f}".format(net) }}</td>
+                            <td class="py-3 px-4 text-center">
+                                <form action="/payroll" method="POST" onsubmit="return confirm('Reset advance deduction for {{ t.name }}?');">
+                                    <input type="hidden" name="action" value="clear_advance">
+                                    <input type="hidden" name="staff_id" value="{{ t.id }}">
+                                    <button type="submit" class="tactile-btn text-white hover:text-red-200 text-xs font-bold bg-red-600 hover:bg-red-500 border border-yellow-400 px-3 py-1.5 rounded-lg uppercase shadow">Clear Advance</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

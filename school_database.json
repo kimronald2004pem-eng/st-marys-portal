@@ -1,0 +1,32 @@
+{
+    "students": [],
+    "staff": [],
+    "marks": {},
+    "fees_ledger": [],
+    "teacher_payments": [],
+    "parents": [],
+    "schedule": {
+        "term": "Term I",
+        "year": "2027",
+        "ended_on": "December 04, 2026",
+        "begins_on": "February 02, 2027"
+    },
+    "archives": {},
+    "users": {
+        "headteacher": {
+            "password": "SMHSPassword2026!",
+            "role": "HEAD_TEACHER",
+            "name": "Head Teacher"
+        },
+        "bursar": {
+            "password": "SMHSPassword2026!",
+            "role": "BURSAR",
+            "name": "School Bursar"
+        },
+        "dos": {
+            "password": "SMHSPassword2026!",
+            "role": "DOS",
+            "name": "Director of Studies"
+        }
+    }
+}

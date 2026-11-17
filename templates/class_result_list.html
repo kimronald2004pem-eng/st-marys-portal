@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Report Analytics - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Top Executive Header -->
+    <header class="bg-gradient-to-r from-blue-900 to-red-950 text-white shadow-2xl px-8 py-5 flex justify-between items-center border-b-4 border-yellow-400">
+        <div>
+            <span class="bg-yellow-400 text-blue-950 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-widest shadow">Board Presentation Engine</span>
+            <h1 class="text-xl md:text-2xl font-black text-yellow-400 uppercase tracking-wider mt-1">PROGRESS REPORT ANALYTICS</h1>
+            <p class="text-xs text-gray-200">St. Mary's High School Ziroobwe &bull; Active Term: <span class="text-yellow-400 font-bold">{{ schedule.term }}, {{ schedule.year }}</span></p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/headteacher/hub" class="tactile-btn bg-blue-800 hover:bg-blue-700 border border-yellow-400 text-yellow-300 text-xs px-5 py-2.5 rounded-xl font-black uppercase shadow">&larr; Back to Master Hub</a>
+            <a href="/logout" class="tactile-btn bg-red-600 hover:bg-red-500 border border-red-300 text-white text-xs px-5 py-2.5 rounded-xl font-black uppercase shadow">🔒 Logout</a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl w-full mx-auto px-4 py-8 space-y-8">
+
+        <!-- FILTERS & ARCHIVES SELECTOR -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 border-2 border-yellow-400 flex flex-wrap items-center justify-between gap-4 text-xs">
+            <form method="GET" action="/headteacher/progress-report" class="flex flex-wrap items-center gap-6 w-full">
+                <div class="flex-1 min-w-[220px]">
+                    <label class="block font-bold text-yellow-300 mb-1 uppercase tracking-wider">Filter Class</label>
+                    <select name="filter_class" onchange="this.form.submit()" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-4 py-2.5 font-bold text-white shadow">
+                        <option value="ALL" {% if target_class == 'ALL' %}selected{% endif %}>All Classes (S.1 - S.6)</option>
+                        {% for c in classes %}
+                        <option value="{{ c }}" {% if target_class == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[280px]">
+                    <label class="block font-bold text-yellow-300 mb-1 uppercase tracking-wider">Compare Against Historical Archive</label>
+                    <select name="archive_key" onchange="this.form.submit()" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-4 py-2.5 font-bold text-yellow-400 shadow">
+                        <option value="">-- Select Past Term for Trend Analysis --</option>
+                        {% for key in archives.keys() %}
+                        <option value="{{ key }}" {% if selected_archive == key %}selected{% endif %}>Archive: {{ key }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <!-- ANALYTICAL COMPARISON TABLE -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 md:p-8 border-2 border-yellow-400 space-y-6">
+            <div class="border-b border-blue-800 pb-4">
+                <h2 class="text-base font-black text-yellow-400 uppercase tracking-wide">📈 Term-over-Term &amp; Mid vs End Performance Analytics</h2>
+                <p class="text-xs text-gray-300">Cross-referencing live scores with historical archives to generate automated trends for board presentations.</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-blue-950 uppercase border-b border-blue-800 text-yellow-300 text-[10px]">
+                            <th class="py-3 px-4">Student ID &amp; Name</th>
+                            <th class="py-3 px-4">Class</th>
+                            <th class="py-3 px-4">Subject Breakdown &amp; Trends</th>
+                            <th class="py-3 px-4 text-right">Term Average</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-800">
+                        {% for item in class_analysis %}
+                        <tr class="hover:bg-blue-800/50">
+                            <td class="py-4 px-4 align-top">
+                                <span class="font-mono font-bold text-yellow-400 block">{{ item.student.id }}</span>
+                                <span class="font-bold text-white uppercase text-sm">{{ item.student.name }}</span>
+                            </td>
+                            <td class="py-4 px-4 align-top font-bold text-gray-200">
+                                {{ item.student.class }} {{ item.student.stream }}
+                            </td>
+                            <td class="py-4 px-4">
+                                <div class="space-y-2">
+                                    {% for sub in item.subjects %}
+                                    <div class="bg-blue-950/80 p-3 rounded-xl flex flex-wrap justify-between items-center border border-yellow-400/30 gap-2 shadow">
+                                        <span class="font-bold text-yellow-300 uppercase">{{ sub.subject }}</span>
+                                        <div class="flex items-center gap-4 font-mono text-xs">
+                                            <span class="text-gray-300">Current: <strong class="text-white">{{ sub.current_eot }}</strong></span>
+                                            <span class="text-gray-300">Past: <strong class="text-gray-300">{{ sub.historical_eot }}</strong></span>
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase shadow 
+                                                {% if 'Progressive' in sub.trend %}bg-emerald-900 border border-emerald-400 text-emerald-200
+                                                {% elif 'Decline' in sub.trend %}bg-red-900 border border-red-400 text-red-200
+                                                {% else %}bg-blue-900 border border-blue-400 text-blue-200{% endif %}">
+                                                {{ sub.trend }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-gray-300 italic">No subject marks recorded yet.</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 align-top text-right font-mono font-black text-sm text-yellow-400">
+                                {{ item.term_average }}%
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-gray-300 font-bold italic">No student analysis records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</body>
+</html>

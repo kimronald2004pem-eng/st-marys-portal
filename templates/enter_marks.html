@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Students' Marks - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Top Executive Header -->
+    <header class="bg-gradient-to-r from-blue-900 to-red-950 text-white shadow-2xl px-8 py-5 flex justify-between items-center border-b-4 border-yellow-400">
+        <div>
+            <span class="bg-yellow-400 text-blue-950 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">Academic Assessment Engine</span>
+            <h1 class="text-xl md:text-2xl font-black text-white uppercase tracking-wider mt-1">RECORD STUDENTS' MARKS</h1>
+            <p class="text-xs text-gray-200">St. Mary's High School Ziroobwe &bull; Active Term: <span class="text-yellow-400 font-bold">{{ schedule.term }}, {{ schedule.year }}</span></p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/headteacher/hub" class="tactile-btn bg-blue-800 hover:bg-blue-700 border border-yellow-400 text-yellow-300 text-xs px-4 py-2.5 rounded-xl font-black shadow">&larr; Back to Hub</a>
+            <a href="/dashboard" class="tactile-btn bg-blue-800 hover:bg-blue-700 border border-yellow-400 text-yellow-300 text-xs px-4 py-2.5 rounded-xl font-black shadow">🏠 Dashboard</a>
+            <a href="/logout" class="tactile-btn bg-red-600 hover:bg-red-500 border border-red-300 text-white text-xs px-4 py-2.5 rounded-xl font-black shadow">🔒 Logout</a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl w-full mx-auto px-4 py-8 space-y-8">
+
+        {% if msg %}
+        <div class="bg-emerald-800 border-2 border-yellow-400 text-white p-4 rounded-2xl shadow-lg font-bold text-xs">
+            ✅ {{ msg }}
+        </div>
+        {% endif %}
+
+        <!-- STEP 1: SELECT CLASS, SEARCH & STUDENT -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 md:p-8 border-2 border-yellow-400 space-y-6">
+            <div class="border-b border-blue-800 pb-4">
+                <h2 class="text-base font-black text-yellow-400 uppercase">🎯 Step 1: Select Cohort, Search &amp; Student</h2>
+                <p class="text-xs text-gray-300">Filter class, search by student name or last digits of ID, and select the student to record marks offline.</p>
+            </div>
+
+            <form method="GET" action="/enter_marks" class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+                <div>
+                    <label class="block font-bold text-yellow-300 mb-2">Select Class</label>
+                    <select name="class" onchange="this.form.submit()" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-4 py-3 font-bold text-white">
+                        {% for c in classes %}
+                        <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>Class: {{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-yellow-300 mb-2">Search Student (Name or ID digits)</label>
+                    <input type="text" name="student_search" value="{{ student_search }}" placeholder="e.g. Diana or 001" oninput="this.form.submit()"
+                            class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-4 py-2.5 text-white font-bold">
+                </div>
+                <div>
+                    <label class="block font-bold text-yellow-300 mb-2">Select Student</label>
+                    <select name="student_id" onchange="this.form.submit()" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-4 py-3 font-bold text-yellow-400">
+                        <option value="">-- Choose Student --</option>
+                        {% for s in class_students %}
+                        <option value="{{ s.id }}" {% if student_id == s.id %}selected{% endif %}>{{ s.id }} - {{ s.name }} ({{ s.stream }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+            
+            <div class="pt-2 flex justify-end">
+                <a href="/reports/class-result-list?class={{ selected_class }}" target="_blank" class="tactile-btn bg-red-600 hover:bg-red-500 text-yellow-300 border-2 border-yellow-400 font-black text-xs px-6 py-3 rounded-xl uppercase tracking-wider shadow-lg">
+                    🖨️ View &amp; Print Class Result List for {{ selected_class }}
+                </a>
+            </div>
+        </div>
+
+        {% if student_id %}
+        <!-- STEP 2: RECORD MARKS & COMPETENCIES FORM -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 md:p-8 border-2 border-yellow-400 space-y-6">
+            <div class="border-b border-blue-800 pb-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-base font-black text-yellow-400 uppercase">📝 Step 2: Input Subject, Papers, CS &amp; Teacher</h2>
+                    <p class="text-xs text-gray-300">Select subject, paper type (P1, P2, P3), columnar Competency Scores (CS1-CS5), and teacher name.</p>
+                </div>
+                <span class="bg-blue-950 text-yellow-400 font-mono font-bold px-4 py-1.5 rounded-xl text-xs border border-yellow-400/50 shadow">Active Student ID: {{ student_id }}</span>
+            </div>
+
+            <form method="POST" action="/enter_marks" class="grid grid-cols-1 md:grid-cols-6 gap-4 text-xs items-end">
+                <input type="hidden" name="action" value="save_marks">
+                <input type="hidden" name="class" value="{{ selected_class }}">
+                <input type="hidden" name="student_id" value="{{ student_id }}">
+                <input type="hidden" name="student_search" value="{{ student_search }}">
+
+                <!-- Subject Selection -->
+                <div class="md:col-span-2">
+                    <label class="block font-bold text-yellow-300 mb-1">Subject Discipline</label>
+                    <select name="subject" required class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-3 py-2.5 font-bold text-white">
+                        {% for sub in available_subjects %}
+                        <option value="{{ sub }}">{{ sub }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Assessment Type -->
+                <div>
+                    <label class="block font-bold text-yellow-300 mb-1">Assessment Type</label>
+                    <select name="exam_type" id="exam_type" onchange="toggleAssessmentFields()" required class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-3 py-2.5 font-bold text-yellow-400">
+                        <option value="mid">Mid-Term Exam (mid)</option>
+                        <option value="eot">End-of-Term Exam (eot)</option>
+                        <option value="cs">Competency Score (CS)</option>
+                    </select>
+                </div>
+
+                <!-- Paper Type (P1, P2, P3) -->
+                <div id="paper_div">
+                    <label class="block font-bold text-yellow-300 mb-1">Paper Type</label>
+                    <select name="paper_type" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-3 py-2.5 font-bold text-cyan-300">
+                        <option value="P1">Paper 1 (P1)</option>
+                        <option value="P2">Paper 2 (P2)</option>
+                        <option value="P3">Paper 3 (P3)</option>
+                    </select>
+                </div>
+
+                <!-- CS Columnar Selector (CS1 to CS5) -->
+                <div id="cs_div" style="display: none;">
+                    <label class="block font-bold text-yellow-300 mb-1">CS Column</label>
+                    <select name="cs_key" class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-3 py-2.5 font-bold text-amber-300">
+                        <option value="CS1">CS1</option>
+                        <option value="CS2">CS2</option>
+                        <option value="CS3">CS3</option>
+                        <option value="CS4">CS4</option>
+                        <option value="CS5">CS5</option>
+                    </select>
+                </div>
+
+                <!-- Score Value -->
+                <div>
+                    <label class="block font-bold text-yellow-300 mb-1">Score (0 - 100)</label>
+                    <input type="number" step="0.1" min="0" max="100" name="score" required placeholder="e.g. 78"
+                            class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-3 py-2 font-mono font-bold text-white">
+                </div>
+
+                <!-- Teacher Selection (Auto-Fetches Initials) -->
+                <div class="md:col-span-3">
+                    <label class="block font-bold text-yellow-300 mb-1">Teacher Name (Auto-Fetches Initials)</label>
+                    <select name="teacher_name" required class="w-full bg-blue-950 border border-yellow-400/60 rounded-xl px-3 py-2.5 font-bold text-white">
+                        <option value="">-- Select Teacher --</option>
+                        {% for t in staff_list %}
+                        <option value="{{ t.name }}">{{ t.name }} ({{ t.subject }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="md:col-span-3 pt-2">
+                    <button type="submit" class="tactile-btn w-full bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black py-3 rounded-xl uppercase tracking-wider shadow-lg">
+                        💾 Save &amp; Auto-Allocate to Reports
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- CURRENT RECORDED MARKS TABLE FOR THIS STUDENT -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 md:p-8 border-2 border-yellow-400 space-y-4">
+            <h3 class="font-black text-yellow-400 text-sm uppercase">📋 Currently Recorded Marks &amp; Competencies</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-blue-950 uppercase border-b border-blue-800 text-yellow-300 text-[10px]">
+                            <th class="py-3 px-4">Subject</th>
+                            <th class="py-3 px-4 text-center">Level</th>
+                            <th class="py-3 px-4 text-center">Teacher Initials</th>
+                            <th class="py-3 px-4 text-center">Competency Scores (CS1 - CS5)</th>
+                            <th class="py-3 px-4 text-center">Papers (P1, P2, P3)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-800">
+                        {% if current_student_marks is mapping %}
+                            {% for sub, data in current_student_marks.items() %}
+                            <tr class="hover:bg-blue-800/50">
+                                <td class="py-3.5 px-4 font-bold text-white uppercase">{{ sub }}</td>
+                                <td class="py-3.5 px-4 text-center font-mono text-gray-200">{{ data.level }}-Level</td>
+                                <td class="py-3.5 px-4 text-center font-mono font-bold text-yellow-400">{{ data.teacher_initials }}</td>
+                                <td class="py-3.5 px-4 text-center font-mono text-cyan-300">
+                                    {% if data.cs is mapping %}
+                                        {% for cs_name, cs_val in data.cs.items() %}
+                                        {{ cs_name }}: {{ cs_val }}{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        None
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4 text-center font-mono text-emerald-300">
+                                    {% if data.papers is mapping %}
+                                        {% for p_name, p_vals in data.papers.items() %}
+                                        [{{ p_name }} - Mid: {{ p_vals.mid }}, EOT: {{ p_vals.eot }}]{% if not loop.last %} <br>{% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        None
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="py-6 text-center text-gray-300 font-bold italic">No marks entered yet for this student or invalid data format. Use the form above to start recording.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+
+    <script>
+        function toggleAssessmentFields() {
+            var examType = document.getElementById("exam_type").value;
+            var csDiv = document.getElementById("cs_div");
+            var paperDiv = document.getElementById("paper_div");
+            if (examType === "cs") {
+                csDiv.style.display = "block";
+                paperDiv.style.display = "none";
+            } else {
+                csDiv.style.display = "none";
+                paperDiv.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>

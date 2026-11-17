@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Print Reports - {{ target_class }}</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        @page {
+            margin: 6mm;
+            size: auto;
+        }
+        @media print {
+            html, body {
+                background: white !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            .no-print { display: none !important; }
+            .single-page-sheet {
+                width: 100% !important;
+                height: 98vh !important;
+                max-height: 98vh !important;
+                overflow: hidden !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                padding: 8px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                border: 2px solid #1e3a8a !important;
+            }
+            .single-page-sheet:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+        }
+        body { background: #0f172a; font-family: system-ui, -apple-system, sans-serif; }
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="p-3 bg-blue-950 text-gray-100 min-h-screen">
+
+    <!-- Top Action Bar (Hidden on Print) -->
+    <div class="no-print max-w-5xl mx-auto mb-6 flex justify-between items-center bg-blue-900/90 p-4 rounded-3xl shadow-xl border-2 border-yellow-400">
+        <div>
+            <h1 class="text-yellow-400 font-black text-sm uppercase tracking-wide">Batch Print Console &bull; Class: {{ target_class }}</h1>
+            <p class="text-xs text-gray-200">Total Reports Ready: {{ reports_list | length }}</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="/reports" class="tactile-btn bg-blue-800 hover:bg-blue-700 border border-yellow-400 text-yellow-300 text-xs px-5 py-2.5 rounded-xl font-black uppercase shadow">&larr; Back to Reports</a>
+            <button onclick="window.print()" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-xs px-6 py-2.5 rounded-xl font-black uppercase tracking-wider shadow-lg">🖨️ Print All Reports</button>
+        </div>
+    </div>
+
+    {% for item in reports_list %}
+    {% set student = item.student %}
+    {% set report = item.report %}
+    {% set is_alevel = item.is_alevel %}
+    {% set sub_count = report.subjects | length %}
+    {% set compact = sub_count > 8 %}
+
+    <div class="single-page-sheet w-full max-w-5xl mx-auto bg-white text-blue-950 p-4 rounded-3xl shadow-2xl flex flex-col justify-between space-y-2 border-2 border-yellow-400 mb-6">
+
+        <!-- School Header with Badge & Real QR Code -->
+        <div class="bg-gradient-to-r from-blue-900 to-red-950 text-white p-3 rounded-2xl flex justify-between items-center border-b-4 border-yellow-400 shadow-md">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='school_badge.jpg') }}"
+                     onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src='{{ url_for('static', filename='images/school_badge.jpg') }}';}else{this.style.display='none';}"
+                     alt="School Badge"
+                     class="w-12 h-12 object-cover rounded-full border-2 border-yellow-400 bg-white shadow">
+                <div>
+                    <h1 class="text-sm md:text-base font-black tracking-wider text-yellow-400 uppercase">ST. MARY'S HIGH SCHOOL ZIROOBWE</h1>
+                    <p class="text-[8px] text-gray-200 font-bold">P.O. Box 7481, Kampala, Uganda | Tel: +256 747 515 338</p>
+                    <p class="text-[8px] text-yellow-300 font-black italic">Motto: "{{ schedule.motto }}" &bull; {% if is_alevel %}A-LEVEL (UACE){% else %}O-LEVEL (UCE){% endif %}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <span class="bg-red-600 text-yellow-300 border border-yellow-400 text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest block shadow">VERIFIED TRANSCRIPT</span>
+                    <p class="text-[10px] font-mono font-black text-yellow-400 mt-0.5">{{ student.id }}</p>
+                </div>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data={{ ('SMHS Ziroobwe | ' ~ student.id ~ ' | ' ~ student.name ~ ' | ' ~ student.class ~ ' | Avg: ' ~ report.term_avg ~ '%') | urlencode }}"
+                     alt="Transcript QR"
+                     class="w-11 h-11 bg-white p-0.5 rounded-xl border-2 border-yellow-400 shadow">
+            </div>
+        </div>
+
+        <!-- Sub-Header Title -->
+        <div class="bg-blue-950 text-yellow-300 text-center py-1 rounded-xl font-black text-[10px] uppercase tracking-widest shadow border border-yellow-400/40">
+            {{ report.report_title }} &mdash; {{ report.term }}
+        </div>
+
+        <!-- Student Biodata Bar with Photo from Students List -->
+        <div class="bg-blue-50/90 border border-blue-300 rounded-2xl p-2.5 flex justify-between items-center text-xs shadow-sm">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 flex-grow">
+                <div>
+                    <span class="text-gray-600 block text-[8px] font-black uppercase">Student Name:</span>
+                    <strong class="text-blue-950 uppercase text-[11px] font-black">{{ student.name }}</strong>
+                </div>
+                <div>
+                    <span class="text-gray-600 block text-[8px] font-black uppercase">Student ID:</span>
+                    <strong class="font-mono text-blue-900 text-[11px] font-bold">{{ student.id }}</strong>
+                </div>
+                <div>
+                    <span class="text-gray-600 block text-[8px] font-black uppercase">Class &amp; Stream:</span>
+                    <strong class="text-blue-950 text-[11px] font-bold">{{ student.class }} {{ student.stream }}{% if is_alevel and student.combination %} ({{ student.combination }}){% endif %}</strong>
+                </div>
+                <div>
+                    <span class="text-gray-600 block text-[8px] font-black uppercase">Gender / Residence:</span>
+                    <strong class="text-blue-950 text-[11px] font-bold">{{ student.gender }} / {{ student.residential }}</strong>
+                </div>
+            </div>
+            {% if student.photo %}
+            <img src="{{ student.photo }}" alt="{{ student.name }}" class="w-11 h-11 object-cover rounded-xl border-2 border-blue-950 shadow">
+            {% else %}
+            <div class="w-11 h-11 bg-blue-950 text-yellow-400 font-black rounded-xl flex items-center justify-center text-xs shadow border border-yellow-400/50">
+                {% set names = student.name.split() %}
+                {% if names | length >= 2 %}{{ names[0][0] }}{{ names[1][0] }}{% else %}{{ student.name[:2] | upper }}{% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Fees & Automatic Headteacher Hub Term Dates Bar -->
+        <div class="flex justify-between items-center text-[10px] px-1 font-bold text-blue-950">
+            <div>Fees Balance: <strong class="text-red-600 font-mono">{{ report.fees.label }}</strong></div>
+            <div>Term Ended On: <strong class="text-blue-950">{{ report.ended_on }}</strong> &bull; Next Term Begins: <strong class="text-blue-950">{{ report.begins_on }}</strong></div>
+        </div>
+
+        <!-- Main Marks Table -->
+        <div class="overflow-x-auto rounded-xl border border-blue-200">
+            <table class="w-full text-left border-collapse {{ 'text-[8px]' if compact else 'text-[9px]' }} border border-blue-300">
+                <thead>
+                    <tr class="bg-blue-950 text-white uppercase text-[7.5px]">
+                        <th class="py-1 px-1 border border-blue-900 text-center w-5">#</th>
+                        <th class="py-1 px-2 border border-blue-900">Subject</th>
+                        <th class="py-1 px-1 border border-purple-800 bg-purple-950 text-center" colspan="3">Cont. Assessment</th>
+                        <th class="py-1 px-1 border border-blue-900 bg-blue-900 text-center">CA (20%)</th>
+                        <th class="py-1 px-1 border border-blue-900 text-center" colspan="3">Mid-Term</th>
+                        <th class="py-1 px-1 border border-blue-900 text-center">MOT %</th>
+                        <th class="py-1 px-1 border border-blue-900 text-center">Grd</th>
+                        <th class="py-1 px-1 border border-blue-900 text-center" colspan="3">End-Term</th>
+                        <th class="py-1 px-1 border border-blue-900 text-center">EOT %</th>
+                        <th class="py-1 px-1 border border-blue-900 text-center">Grd</th>
+                        {% if is_alevel %}
+                        <th class="py-1 px-1 border border-blue-900 text-center">Pts</th>
+                        {% endif %}
+                        <th class="py-1 px-2 border border-blue-900">Comment</th>
+                        <th class="py-1 px-1 border border-blue-900 text-center">Init.</th>
+                    </tr>
+                    <tr class="bg-blue-900 text-yellow-300 text-[7px] uppercase">
+                        <th class="border border-blue-800" colspan="2"></th>
+                        <th class="py-0.5 px-0.5 border border-purple-800 bg-purple-900 text-center">CS1</th>
+                        <th class="py-0.5 px-0.5 border border-purple-800 bg-purple-900 text-center">CS2</th>
+                        <th class="py-0.5 px-0.5 border border-purple-800 bg-purple-900 text-center">CS3</th>
+                        <th class="border border-blue-800"></th>
+                        <th class="py-0.5 px-0.5 border border-blue-800 text-center">P1</th>
+                        <th class="py-0.5 px-0.5 border border-blue-800 text-center">P2</th>
+                        <th class="py-0.5 px-0.5 border border-blue-800 text-center">P3</th>
+                        <th class="border border-blue-800" colspan="2"></th>
+                        <th class="py-0.5 px-0.5 border border-blue-800 text-center">P1</th>
+                        <th class="py-0.5 px-0.5 border border-blue-800 text-center">P2</th>
+                        <th class="py-0.5 px-0.5 border border-blue-800 text-center">P3</th>
+                        <th class="border border-blue-800" colspan="{{ 5 if is_alevel else 4 }}"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-blue-200">
+                    {% for sub in report.subjects %}
+                    {% set row_py = 'py-0' if compact else 'py-0.5' %}
+                    <tr class="hover:bg-blue-50/50">
+                        <td class="{{ row_py }} px-1 text-center font-bold border border-blue-200 text-blue-950">{{ loop.index }}</td>
+                        <td class="{{ row_py }} px-2 font-bold uppercase border border-blue-200 text-blue-950">{{ sub.name }}</td>
+                        <td class="{{ row_py }} px-0.5 text-center font-mono border border-blue-200">{{ sub.cs_map.get('CS1', '-') }}</td>
+                        <td class="{{ row_py }} px-0.5 text-center font-mono border border-blue-200">{{ sub.cs_map.get('CS2', '-') }}</td>
+                        <td class="{{ row_py }} px-0.5 text-center font-mono border border-blue-200">{{ sub.cs_map.get('CS3', '-') }}</td>
+                        <td class="{{ row_py }} px-1 text-center font-mono font-bold text-purple-900 border border-blue-200 bg-purple-50/50">{{ sub.ca }}</td>
+
+                        <td class="{{ row_py }} px-0.5 text-center font-mono border border-blue-200">{{ sub.papers.get('P1', {}).get('mid', '-') }}</td>
+                        <td class="{{ row_py }} px-0.5 text-center font-mono border border-blue-200">{{ sub.papers.get('P2', {}).get('mid', '-') }}</td>
+                        <td class="{{ row_py }} px-0.5 text-center font-mono border border-blue-200">{{ sub.papers.get('P3', {}).get('mid', '-') }}</td>
+                        <td class="{{ row_py }} px-1 text-center font-mono border border-blue-200 font-bold text-blue-900">{{ sub.mot_total }}</td>
+                        <td class="{{ row_py }} px-1 text-center font-bold text-blue-900 border border-blue-200">{{ sub.mot_grade }}</td>
+
+                        <td class="{{ row_py }} px-0.5 text-center font-mono border border-blue-200">{{ sub.papers.get('P1', {}).get('eot', '-') }}</td>
+                        <td class="{{ row_py }} px-0.5 text-center font-mono border border-blue-200">{{ sub.papers.get('P2', {}).get('eot', '-') }}</td>
+                        <td class="{{ row_py }} px-0.5 text-center font-mono border border-blue-200">{{ sub.papers.get('P3', {}).get('eot', '-') }}</td>
+                        <td class="{{ row_py }} px-1 text-center font-mono font-bold text-emerald-700 border border-blue-200 bg-emerald-50/50">{{ sub.eot_total }}</td>
+                        <td class="{{ row_py }} px-1 text-center font-bold text-blue-900 border border-blue-200 bg-blue-100/50">{{ sub.eot_grade }}</td>
+                        {% if is_alevel %}
+                        <td class="{{ row_py }} px-1 text-center font-mono font-bold text-purple-900 border border-blue-200">{{ sub.eot_points }}</td>
+                        {% endif %}
+                        <td class="{{ row_py }} px-2 text-gray-800 font-medium border border-blue-200">{{ sub.eot_comment }}</td>
+                        <td class="{{ row_py }} px-1 text-center font-mono font-bold text-amber-800 border border-blue-200">{{ sub.teacher_initials }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Averages & Conduct Bar -->
+        <div class="bg-blue-900 text-yellow-300 p-2 rounded-xl flex justify-between items-center text-[10px] font-black border border-yellow-400/40 shadow-sm">
+            <div>Mid-Term Avg: <span class="font-mono underline text-white">{{ report.exam_avg }}%</span></div>
+            <div>
+                End-Term Avg: <span class="font-mono underline text-white">{{ report.term_avg }}%</span> &bull; Grade {{ report.overall_term_grade }} ({{ report.overall_desc }})
+                {% if is_alevel %} &bull; Total Points: <span class="font-mono underline text-white">{{ report.total_points }}</span>{% endif %}
+            </div>
+            <div>Conduct: <span class="text-white">{{ report.conduct }}</span></div>
+        </div>
+
+        <!-- Bar Graph on Left & Remarks on Right -->
+        <div class="grid grid-cols-2 gap-2 items-stretch border border-blue-300 rounded-2xl p-2.5 bg-blue-50/40">
+            <!-- Left: Performance Bar Graph -->
+            <div class="bg-white border border-blue-200 rounded-xl p-2 flex flex-col justify-between shadow-sm">
+                <div class="text-[8px] font-black text-blue-950 uppercase mb-1 text-center tracking-wider">Performance Bar Graph (EOT %)</div>
+                <div class="flex justify-around items-end h-14 pt-1 border-b border-l border-blue-300 px-1">
+                    {% for sub in report.subjects %}
+                    <div class="flex flex-col items-center justify-end h-full">
+                        <span class="text-[7px] font-mono font-bold leading-none mb-0.5 text-blue-950">{{ sub.eot_total | int }}%</span>
+                        <div class="w-3.5 bg-blue-600 rounded-t shadow-sm" style="height: {{ ([sub.eot_total, 100] | min) * 0.7 }}%;"></div>
+                        <span class="text-[6px] font-black text-blue-900 uppercase truncate w-7 text-center mt-0.5">{{ sub.name[:4] }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right: Class & Head Teacher Remarks -->
+            <div class="space-y-1.5 text-[10px] flex flex-col justify-center px-2 bg-white rounded-xl border border-blue-200 shadow-sm py-1.5">
+                <div>
+                    <strong class="text-blue-950 uppercase text-[8px] block font-black">Class Teacher's Remark:</strong>
+                    <p class="text-gray-700 italic font-medium">"{{ report.class_teacher_remark }}"</p>
+                </div>
+                <div class="border-t border-blue-100 pt-1">
+                    <strong class="text-blue-950 uppercase text-[8px] block font-black">Head Teacher's Remark:</strong>
+                    <p class="text-gray-700 italic font-medium">"{{ report.head_teacher_remark }}"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level-Specific Grading Scale Footer -->
+        <div class="border-t border-blue-200 pt-1 flex justify-between items-center text-[7px] text-gray-700 font-bold uppercase">
+            {% if is_alevel %}
+            <span>A (80–100% / 5 Pts): Exceptional</span>
+            <span>B (70–79% / 4 Pts): Outstanding</span>
+            <span>C (60–69% / 3 Pts): Satisfactory</span>
+            <span>D (50–59% / 2 Pts): Basic</span>
+            <span>E (0–49% / 1 Pt): Elementary</span>
+            {% else %}
+            <span>A (80–100%): Exceptional</span>
+            <span>B (70–79%): Outstanding</span>
+            <span>C (60–69%): Satisfactory</span>
+            <span>D (50–59%): Basic</span>
+            <span>E (0–49%): Elementary</span>
+            {% endif %}
+        </div>
+
+        <!-- Signatures Footer -->
+        <div class="grid grid-cols-3 gap-4 pt-1 border-t border-blue-200 text-center text-[8px] font-bold text-gray-700 uppercase">
+            <div>
+                <div class="border-b border-dashed border-gray-400 mb-0.5 h-3"></div>
+                Class Teacher Signature
+            </div>
+            <div>
+                <div class="border-b border-dashed border-gray-400 mb-0.5 h-3"></div>
+                Director of Studies (DOS)
+            </div>
+            <div>
+                <div class="border-b border-dashed border-gray-400 mb-0.5 h-3"></div>
+                Head Teacher Stamp &amp; Signature
+            </div>
+        </div>
+
+    </div>
+    {% endfor %}
+
+</body>
+</html>

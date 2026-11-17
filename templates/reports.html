@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Reports - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen font-sans">
+    <header class="bg-gradient-to-r from-blue-900 to-red-950 text-white shadow-2xl border-b-4 border-yellow-400">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+            <div>
+                <h1 class="font-black text-lg md:text-xl text-yellow-400 tracking-wider">ST MARY'S HIGH SCHOOL — Academic Reports Management</h1>
+                <p class="text-xs text-gray-200 font-mono">Generate Individual &amp; Batch Reports &bull; O-Level &amp; A-Level UACE Transcripts Offline</p>
+            </div>
+            <a href="/dashboard" class="tactile-btn bg-yellow-400 text-blue-950 text-xs px-5 py-2.5 rounded-xl font-black uppercase shadow-lg">&larr; Dashboard</a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+        <!-- Class Filter Panel -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 md:p-8 border-2 border-yellow-400 flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <h2 class="text-base font-black text-yellow-400 uppercase">Select Class Roster</h2>
+                <p class="text-xs text-gray-300">Filter students by class to view individual report cards or trigger batch printing.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="/reports?selected_class=ALL" class="tactile-btn px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider {{ 'bg-yellow-400 text-blue-950 border-2 border-white shadow' if selected_class == 'ALL' else 'bg-blue-950 text-yellow-300 border border-yellow-400/50' }}">ALL</a>
+                {% for c in classes %}
+                <a href="/reports?selected_class={{ c }}" class="tactile-btn px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider {{ 'bg-yellow-400 text-blue-950 border-2 border-white shadow' if selected_class == c else 'bg-blue-950 text-yellow-300 border border-yellow-400/50' }}">{{ c }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Batch Printing Control Panel -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 md:p-8 border-2 border-yellow-400 flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <h3 class="font-black text-yellow-400 text-sm uppercase">Batch Printing (Class: <span class="text-red-400">{{ selected_class }}</span>)</h3>
+                <p class="text-xs text-gray-300">Print all student report cards for this class in one continuous print job.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="/reports/batch?class={{ selected_class }}&exam_mode=eot" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black px-6 py-3 rounded-xl text-xs shadow-lg uppercase tracking-wider">🖨️ Batch Print End-of-Term Reports</a>
+                <a href="/reports/batch?class={{ selected_class }}&exam_mode=mid" class="tactile-btn bg-red-600 hover:bg-red-500 text-yellow-300 border border-yellow-400 font-black px-6 py-3 rounded-xl text-xs shadow-lg uppercase tracking-wider">🖨️ Batch Print Mid-Term Reports</a>
+            </div>
+        </div>
+
+        <!-- Student Report Directory Table -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl border-2 border-yellow-400 overflow-hidden">
+            <div class="p-5 border-b border-blue-800 font-black text-sm uppercase text-yellow-400">Student Report Directory</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-blue-950 uppercase border-b border-blue-800 text-yellow-300 text-[10px]">
+                            <th class="py-3 px-4 w-12">#</th>
+                            <th class="py-3 px-4 w-36">Student ID</th>
+                            <th class="py-3 px-4">Student Name</th>
+                            <th class="py-3 px-4 w-28">Class</th>
+                            <th class="py-3 px-4 w-32">Gender / Res</th>
+                            <th class="py-3 px-4 text-right">Actions (Report Printing)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-800">
+                        {% for student in students %}
+                        <tr class="hover:bg-blue-800/50">
+                            <td class="py-3 px-4 text-gray-300">{{ loop.index }}</td>
+                            <td class="py-3 px-4 font-mono text-yellow-400 text-xs font-bold">{{ student.id }}</td>
+                            <td class="py-3 px-4 font-bold uppercase text-white">{{ student.name }}</td>
+                            <td class="py-3 px-4 text-gray-200">{{ student.class }} {{ student.stream }}</td>
+                            <td class="py-3 px-4 text-xs text-gray-200">{{ student.gender }} / {{ student.residential }}</td>
+                            <td class="py-3 px-4 text-right space-x-2">
+                                <a href="/report/view?id={{ student.id }}&exam_mode=eot" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-xs px-4 py-2 rounded-xl font-black shadow uppercase tracking-wider inline-block">Full End-Term</a>
+                                <a href="/report/view?id={{ student.id }}&exam_mode=mid" class="tactile-btn bg-red-600 hover:bg-red-500 text-yellow-300 border border-yellow-400 text-xs px-4 py-2 rounded-xl font-black shadow uppercase tracking-wider inline-block">Print Mid-Term</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-gray-300 text-sm italic">No students found in this class category.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

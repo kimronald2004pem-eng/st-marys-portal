@@ -3,103 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>St. Mary's High School - Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dashboard - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 12px 24px -6px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+        .module-card {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .module-card:hover {
+            transform: translateY(-6px);
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-blue-950 text-white min-h-screen p-6 font-sans">
 
-    <!-- Top Navigation Header -->
-    <header class="bg-blue-900 text-white shadow-md border-b-4 border-yellow-400">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <img src="{{ url_for('static', filename='images/school_badge.jpg') }}" alt="Badge" class="w-10 h-10 rounded-full border border-yellow-400 bg-white object-contain">
-                <div>
-                    <h1 class="font-bold text-lg tracking-wide">ST MARY'S HIGH SCHOOL</h1>
-                    <p class="text-xs text-yellow-300 font-mono">Portal System | Motto: Ever The Best</p>
+    <div class="max-w-7xl mx-auto space-y-8">
+
+        <!-- GRAND SCHOOL BANNER WITH DUAL BADGES, BIG TITLE & MOTTO -->
+        <header class="bg-gradient-to-r from-blue-900 via-blue-950 to-red-950 border-4 border-yellow-400 rounded-3xl p-6 md:p-8 shadow-2xl relative">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                
+                <!-- Left School Badge -->
+                <div class="flex-shrink-0">
+                    <img src="{{ url_for('static', filename='images/school_badge.jpg') }}" alt="Left School Badge" class="w-24 h-24 md:w-28 md:h-28 object-contain rounded-full border-4 border-yellow-400 bg-white p-1 shadow-xl">
                 </div>
+
+                <!-- Center Grand School Title & Motto -->
+                <div class="text-center space-y-2 flex-1">
+                    <span class="inline-block bg-red-700 text-yellow-300 font-black text-[11px] px-4 py-1 rounded-full uppercase tracking-widest border border-yellow-400 shadow">
+                        Official Offline Desktop DBMS
+                    </span>
+                    <h1 class="text-3xl md:text-5xl font-black text-yellow-400 uppercase tracking-wider drop-shadow-md leading-tight">
+                        ST. MARY'S HIGH SCHOOL ZIROOBWE
+                    </h1>
+                    <p class="text-lg md:text-xl font-serif italic font-bold text-white tracking-widest">
+                        "{{ schedule.motto or 'Ever the Best' }}"
+                    </p>
+                    <div class="pt-2 flex flex-wrap justify-center items-center gap-3 text-xs">
+                        <span class="bg-blue-950/90 border border-blue-700 px-3 py-1 rounded-lg text-gray-200">
+                            User: <strong class="text-yellow-400">{{ name }}</strong> ({{ role }})
+                        </span>
+                        <span class="bg-red-900/90 border border-red-600 px-3 py-1 rounded-lg text-white font-bold">
+                            Active Term: <span class="text-yellow-300">{{ schedule.term }} {{ schedule.year }}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Right School Badge -->
+                <div class="flex-shrink-0">
+                    <img src="{{ url_for('static', filename='images/school_badge.jpg') }}" alt="Right School Badge" class="w-24 h-24 md:w-28 md:h-28 object-contain rounded-full border-4 border-yellow-400 bg-white p-1 shadow-xl">
+                </div>
+
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="text-right">
-                    <p class="text-sm font-semibold">{{ name }}</p>
-                    <span class="text-xs bg-red-600 px-2 py-0.5 rounded text-white font-mono">{{ role }}</span>
-                </div>
-                <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg font-semibold transition">
-                    Logout
+
+            <!-- Top-Right Logout Action -->
+            <div class="mt-6 pt-4 border-t border-blue-800/80 flex justify-between items-center text-xs">
+                <span class="text-yellow-300 font-bold tracking-wide">SMAHIZ DBMS &bull; Local Hard Drive Storage Active</span>
+                <a href="/logout" class="tactile-btn bg-red-600 hover:bg-red-500 text-white font-black px-5 py-2 rounded-xl uppercase tracking-wider border border-red-400 shadow">
+                    Logout Session
                 </a>
             </div>
+        </header>
+
+        <!-- CORE MODULES GRID (STYLED IN SCHOOL COLORS: BLUE, RED & YELLOW) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- Student Register (Royal Blue Theme) -->
+            <div class="module-card bg-gradient-to-br from-blue-900 to-blue-950 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-5">
+                <div class="space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-yellow-400 text-blue-950 flex items-center justify-center text-2xl font-black shadow">🎓</div>
+                    <h2 class="text-lg font-black uppercase text-yellow-400 tracking-wider">Student Register</h2>
+                    <p class="text-xs text-blue-100 leading-relaxed">Enroll new learners, organize class streams, update residential status, and manage local student profile photos.</p>
+                </div>
+                <a href="/students" class="tactile-btn block text-center bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black text-xs px-5 py-3.5 rounded-2xl uppercase tracking-wider shadow-lg">
+                    Manage Students
+                </a>
+            </div>
+
+            <!-- Enter Exam Marks (Crimson Red Theme) -->
+            <div class="module-card bg-gradient-to-br from-red-900 to-red-950 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-5">
+                <div class="space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-yellow-400 text-red-950 flex items-center justify-center text-2xl font-black shadow">📝</div>
+                    <h2 class="text-lg font-black uppercase text-yellow-400 tracking-wider">Enter Exam Marks</h2>
+                    <p class="text-xs text-red-100 leading-relaxed">Record Continuous Assessments (CS1–CS5), Mid-Term, and End-of-Term examination paper scores offline.</p>
+                </div>
+                <a href="/enter_marks" class="tactile-btn block text-center bg-yellow-400 hover:bg-yellow-300 text-red-950 font-black text-xs px-5 py-3.5 rounded-2xl uppercase tracking-wider shadow-lg">
+                    Open Marks Entry
+                </a>
+            </div>
+
+            <!-- Reports & Batch Print (Golden Yellow & Royal Blue Accent) -->
+            <div class="module-card bg-gradient-to-br from-blue-900 to-red-950 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-5">
+                <div class="space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-red-600 text-yellow-300 border-2 border-yellow-400 flex items-center justify-center text-2xl font-black shadow">📊</div>
+                    <h2 class="text-lg font-black uppercase text-yellow-400 tracking-wider">Reports &amp; Batch Print</h2>
+                    <p class="text-xs text-gray-100 leading-relaxed">Generate single-page student report cards, class result lists, and bulk batch printing instantly.</p>
+                </div>
+                <a href="/reports" class="tactile-btn block text-center bg-red-600 hover:bg-red-500 text-yellow-300 border-2 border-yellow-400 font-black text-xs px-5 py-3.5 rounded-2xl uppercase tracking-wider shadow-lg">
+                    Open Reports Hub
+                </a>
+            </div>
+
+            <!-- Fees & Accounts Ledger (Crimson Red Theme) -->
+            <div class="module-card bg-gradient-to-br from-red-900 to-red-950 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-5">
+                <div class="space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-900 text-yellow-400 border border-yellow-400 flex items-center justify-center text-2xl font-black shadow">💰</div>
+                    <h2 class="text-lg font-black uppercase text-yellow-400 tracking-wider">Fees &amp; Accounts Ledger</h2>
+                    <p class="text-xs text-red-100 leading-relaxed">Monitor tuition balances, record student fee installments, and generate official printed fee receipts.</p>
+                </div>
+                <a href="/fees" class="tactile-btn block text-center bg-blue-700 hover:bg-blue-600 text-yellow-300 border border-yellow-400 font-black text-xs px-5 py-3.5 rounded-2xl uppercase tracking-wider shadow-lg">
+                    Open Fees Ledger
+                </a>
+            </div>
+
+            <!-- Staff & Payroll (Royal Blue Theme) -->
+            <div class="module-card bg-gradient-to-br from-blue-900 to-blue-950 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-5">
+                <div class="space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-red-600 text-yellow-300 border border-yellow-400 flex items-center justify-center text-2xl font-black shadow">👥</div>
+                    <h2 class="text-lg font-black uppercase text-yellow-400 tracking-wider">Staff &amp; Payroll</h2>
+                    <p class="text-xs text-blue-100 leading-relaxed">Maintain teaching and support staff directories, assign subjects, and manage salaries and allowances.</p>
+                </div>
+                <a href="/staff" class="tactile-btn block text-center bg-red-600 hover:bg-red-500 text-white border border-yellow-400 font-black text-xs px-5 py-3.5 rounded-2xl uppercase tracking-wider shadow-lg">
+                    Open Staff Portal
+                </a>
+            </div>
+
+            <!-- Parents & Guardians Portal (Royal Blue & Red Blend) -->
+            <div class="module-card bg-gradient-to-br from-blue-900 to-red-950 border-2 border-yellow-400 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-5">
+                <div class="space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-yellow-400 text-blue-950 flex items-center justify-center text-2xl font-black shadow">👨‍👩‍👦</div>
+                    <h2 class="text-lg font-black uppercase text-yellow-400 tracking-wider">Parents &amp; Guardians</h2>
+                    <p class="text-xs text-gray-100 leading-relaxed">Link parent and guardian phone contacts and emails directly with enrolled student records.</p>
+                </div>
+                <a href="/parents" class="tactile-btn block text-center bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black text-xs px-5 py-3.5 rounded-2xl uppercase tracking-wider shadow-lg">
+                    Open Parents Portal
+                </a>
+            </div>
+
         </div>
-    </header>
 
-    <!-- Main Dashboard Container -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        
-        <!-- Welcome Banner -->
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8 border-l-8 border-red-600 flex justify-between items-center">
-            <div>
-                <h2 class="text-2xl font-bold text-blue-900">Welcome to the Management Portal</h2>
-                <p class="text-gray-600 text-sm mt-1">Select a module below to manage school operations, records, and reports securely.</p>
+        <!-- HEAD TEACHER ADMINISTRATIVE HUB ACCESS BAR -->
+        <div class="bg-gradient-to-r from-red-900 via-blue-950 to-red-900 border-4 border-yellow-400 p-7 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="space-y-1 text-center md:text-left">
+                <span class="bg-yellow-400 text-blue-950 text-[10px] font-black px-3 py-0.5 rounded-full uppercase tracking-widest">Executive Control</span>
+                <h3 class="text-xl font-black text-yellow-400 uppercase tracking-wide pt-1">Head Teacher's Administrative Hub</h3>
+                <p class="text-xs text-gray-200">Configure 60-year calendar dates, backup JSON database to flash drives, and run SVG line graph analysis.</p>
             </div>
-            <div class="hidden md:block text-right">
-                <span class="text-xs text-gray-400 uppercase tracking-widest font-bold">System Status</span>
-                <p class="text-green-600 font-semibold text-sm">● Cloud Secure & Active</p>
-            </div>
+            <a href="/bypass-hub" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-xs font-black px-8 py-4 rounded-2xl uppercase tracking-wider shadow-xl border-2 border-white whitespace-nowrap">
+                Enter Head Teacher Hub
+            </a>
         </div>
 
-        <!-- Modules Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            {% if role == 'HEAD_TEACHER' %}
-            <!-- Master Dashboard (Head Teacher Only) -->
-            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-yellow-500 hover:shadow-lg transition">
-                <div class="text-yellow-600 font-bold text-xl mb-2">👑 Master Dashboard</div>
-                <p class="text-gray-600 text-sm mb-4">Exclusive master controls, administrative oversight, and security alert gates.</p>
-                <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-2.5 py-1 rounded font-semibold">Restricted: HT Only</span>
-            </div>
-            {% endif %}
-
-            <!-- Student Registers & Records -->
-            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-blue-600 hover:shadow-lg transition">
-                <div class="text-blue-900 font-bold text-xl mb-2">📚 Student Registers</div>
-                <p class="text-gray-600 text-sm mb-4">View class lists, total student counts, boarding/day status, and updates for new joinings.</p>
-                <button class="text-blue-600 hover:text-blue-800 text-sm font-semibold">Access Module &rarr;</button>
-            </div>
-
-            <!-- Student Payments (Bursar) -->
-            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-red-600 hover:shadow-lg transition">
-                <div class="text-red-600 font-bold text-xl mb-2">💰 Student Payments</div>
-                <p class="text-gray-600 text-sm mb-4">Track tuition, registration fees, non-monetary requirements ticks, and fee balances automatically.</p>
-                <button class="text-red-600 hover:text-red-800 text-sm font-semibold">Access Module &rarr;</button>
-            </div>
-
-            <!-- Staff & Payroll -->
-            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-blue-900 hover:shadow-lg transition">
-                <div class="text-blue-900 font-bold text-xl mb-2">👨‍🏫 Staff & Payroll</div>
-                <p class="text-gray-600 text-sm mb-4">Manage teachers, subject allocations, roles (Class Teachers), advances, allowances, and net pay.</p>
-                <button class="text-blue-900 hover:text-blue-700 text-sm font-semibold">Access Module &rarr;</button>
-            </div>
-
-            <!-- Report Cards & Batch Printing -->
-            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-yellow-500 hover:shadow-lg transition">
-                <div class="text-yellow-700 font-bold text-xl mb-2">📄 Report Card Section</div>
-                <p class="text-gray-600 text-sm mb-4">Mid-term and End-of-Term reports with QR codes, teacher initials, grading scales, and class batch printing.</p>
-                <button class="text-yellow-600 hover:text-yellow-800 text-sm font-semibold">Access Module &rarr;</button>
-            </div>
-
-            <!-- Programs & Elections -->
-            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-red-600 hover:shadow-lg transition">
-                <div class="text-red-600 font-bold text-xl mb-2">⚖️ Programs & Elections</div>
-                <p class="text-gray-600 text-sm mb-4">Manage academic year schedules, term programs, and student leader prefect boards with photo IDs.</p>
-                <button class="text-red-600 hover:text-red-800 text-sm font-semibold">Access Module &rarr;</button>
-            </div>
-
-        </div>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="mt-12 py-6 text-center text-gray-500 text-xs border-t border-gray-200">
-        <p>St. Mary's High School Database Management System &copy; 2026. Built for Professional Academic Excellence.</p>
-    </footer>
+    </div>
 
 </body>
 </html>

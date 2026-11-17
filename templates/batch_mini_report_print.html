@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Mini Slips - {{ selected_class }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @page { size: auto; margin: 4mm; }
+        @media print {
+            body { background: white !important; margin: 0 !important; }
+            .no-print { display: none !important; }
+            .mini-card { border: 2px solid black !important; break-inside: avoid; margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 py-6 font-mono">
+    <div class="max-w-6xl mx-auto mb-4 flex justify-between no-print px-4">
+        <a href="/reports" class="bg-gray-700 text-white text-xs px-4 py-2 rounded">&larr; Back to Reports</a>
+        <button onclick="window.print();" class="bg-green-700 text-white text-xs px-5 py-2 rounded font-bold">🖨️ Print Batch Mini Slips</button>
+    </div>
+    
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 px-2">
+        {% for item in reports_data %}
+        {% set student = item.student %}
+        {% set report = item.report %}
+        <div class="mini-card bg-white border-2 border-black p-4 rounded shadow">
+            <div class="text-center border-b border-black pb-2 mb-2">
+                <h1 class="text-xs font-bold uppercase">ST. MARY'S HIGH SCHOOL</h1>
+                <p class="text-[9px]">CONTINUOUS ASSESSMENT &amp; MID-TERM MINI SLIP — {{ report.term.upper() }}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-1 text-[10px] mb-2 border-b border-black pb-2">
+                <div><strong>NAME:</strong> {{ student.name }}</div>
+                <div><strong>ID:</strong> {{ student.id }}</div>
+                <div><strong>CLASS:</strong> {{ student.class }} {{ student.stream }}</div>
+            </div>
+            <table class="w-full text-left border-collapse border border-black text-[10px] mb-2">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="p-1 border border-black">SUBJECT</th>
+                        <th class="p-1 border border-black text-center">CA</th>
+                        <th class="p-1 border border-black text-center">MID</th>
+                        <th class="p-1 border border-black text-center">GRD</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in report.subjects %}
+                    <tr>
+                        <td class="p-1 border border-black">{{ sub.name }}</td>
+                        <td class="p-1 border border-black text-center">{{ sub.ca }}</td>
+                        <td class="p-1 border border-black text-center font-bold">{{ sub.mid }}</td>
+                        <td class="p-1 border border-black text-center">{% if sub.mid >= 80 %}A{% elif sub.mid >= 70 %}B{% elif sub.mid >= 60 %}C{% elif sub.mid >= 50 %}D{% else %}E{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="text-[10px]"><strong>Teacher Remark:</strong> {{ report.class_teacher_remark }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Massive Comprehensive Class Performance Report - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .page-break { page-break-after: always; break-after: page; }
+            .print-shadow { box-shadow: none !important; border: 2px solid #1e3a8a !important; }
+        }
+        body { background: #0f172a; font-family: system-ui, -apple-system, sans-serif; }
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen font-sans print:bg-white print:text-black">
+
+    <!-- Top Floating Toolbar (Hidden when printing) -->
+    <div class="no-print bg-blue-900/90 p-4 shadow-xl flex justify-between items-center sticky top-0 z-50 border-b-2 border-yellow-400 backdrop-blur-md">
+        <div class="flex items-center gap-4">
+            <a href="/headteacher/hub" class="tactile-btn bg-blue-800 hover:bg-blue-700 text-yellow-300 border border-yellow-400 text-xs px-4 py-2 rounded-xl font-black uppercase">&larr; Back to Hub</a>
+            <form method="GET" action="/headteacher/comprehensive-report" class="flex items-center gap-2 text-xs">
+                <select name="class" onchange="this.form.submit()" class="bg-blue-950 border-2 border-yellow-400 text-white rounded-xl px-3 py-1.5 font-bold shadow-inner">
+                    {% for c in classes %}
+                    <option value="{{ c }}" {% if target_class == c %}selected{% endif %}>Class: {{ c }}</option>
+                    {% endfor %}
+                </select>
+                <select name="archive_key" onchange="this.form.submit()" class="bg-blue-950 border-2 border-yellow-400 text-yellow-300 rounded-xl px-3 py-1.5 font-bold shadow-inner">
+                    <option value="">-- Compare Archive --</option>
+                    {% for key in archives.keys() %}
+                    <option value="{{ key }}" {% if selected_archive == key %}selected{% endif %}>Archive: {{ key }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+        <button onclick="window.print()" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 font-black text-xs px-6 py-2.5 rounded-xl uppercase tracking-wider shadow-lg">
+            🖨️ Print Massive Institutional Report
+        </button>
+    </div>
+
+    <main class="max-w-4xl mx-auto p-6 md:p-12 space-y-12">
+
+        <!-- ================= PAGE 1: EXECUTIVE COVER & MACRO NARRATIVE ================= -->
+        <div class="bg-white text-blue-950 rounded-3xl p-8 md:p-12 shadow-2xl print-shadow page-break flex flex-col justify-between min-h-[1050px] border-2 border-yellow-400">
+            <div class="border-b-4 border-blue-950 pb-6 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <img src="{{ url_for('static', filename='images/school_badge.jpg') }}" alt="Badge" class="w-20 h-20 object-contain rounded-full border-2 border-yellow-400 bg-white p-0.5 shadow">
+                    <div>
+                        <h1 class="text-2xl font-black text-blue-950 uppercase tracking-wider">ST. MARY'S HIGH SCHOOL ZIROOBWE</h1>
+                        <p class="text-xs font-mono text-gray-700 font-bold">Ziroobwe Campus &bull; Institutional Academic Evaluation Division</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="bg-red-600 text-yellow-300 border border-yellow-400 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-widest block shadow">Board Presentation Document</span>
+                    <p class="text-sm font-serif italic font-black text-red-700 mt-2">"Ever the Best"</p>
+                </div>
+            </div>
+
+            <div class="space-y-6 my-auto">
+                <div class="text-center space-y-2">
+                    <h2 class="text-xl font-black text-blue-950 uppercase tracking-widest underline decoration-yellow-400 decoration-4">MASSIVE COMPREHENSIVE CLASS EVALUATION</h2>
+                    <p class="text-sm font-bold text-gray-700">Target Cohort: <span class="text-blue-950 underline font-black">{{ report.class_name }}</span> | Academic Term: <span class="text-blue-950 underline font-black">{{ report.term }}</span></p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 text-center my-6">
+                    <div class="bg-blue-50/80 p-4 rounded-2xl border-2 border-blue-200 shadow-sm">
+                        <span class="block text-[11px] font-black text-gray-600 uppercase">Class Mean Average</span>
+                        <strong class="text-3xl font-black text-blue-950">{{ report.class_average }}%</strong>
+                    </div>
+                    <div class="bg-emerald-50/80 p-4 rounded-2xl border-2 border-emerald-200 shadow-sm">
+                        <span class="block text-[11px] font-black text-gray-600 uppercase">Sciences Aggregate</span>
+                        <strong class="text-3xl font-black text-emerald-700">{{ report.science_average }}%</strong>
+                    </div>
+                    <div class="bg-purple-50/80 p-4 rounded-2xl border-2 border-purple-200 shadow-sm">
+                        <span class="block text-[11px] font-black text-gray-600 uppercase">Humanities Aggregate</span>
+                        <strong class="text-3xl font-black text-purple-700">{{ report.humanities_average }}%</strong>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50/90 border-l-4 border-blue-900 p-6 rounded-2xl space-y-3 shadow-sm border border-blue-200">
+                    <h3 class="font-black text-blue-950 text-xs uppercase tracking-wider">📝 Executive Cohort Narrative &amp; Strategic Observations</h3>
+                    <p class="text-sm text-gray-800 leading-relaxed font-serif text-justify font-medium">
+                        {{ report.narrative }}
+                    </p>
+                </div>
+
+                <div class="bg-red-50 border-2 border-red-200 p-4 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div>
+                        <span class="block text-[10px] font-black text-red-600 uppercase">Priority Departmental Focus</span>
+                        <strong class="text-base font-black text-red-950">Identified Vulnerable Subject: {{ report.weakest_subject }}</strong>
+                    </div>
+                    <span class="bg-red-600 text-white text-xs px-3 py-1.5 rounded-xl font-black uppercase shadow">Immediate Remediation</span>
+                </div>
+            </div>
+
+            <div class="border-t-2 border-blue-200 pt-6 flex justify-between text-xs font-bold text-gray-700">
+                <div>
+                    <p class="font-black text-blue-950">Report Compiled By: Director of Studies Office</p>
+                    <p class="font-bold text-gray-600">St. Mary's High School Ziroobwe Database</p>
+                </div>
+                <div class="text-right">
+                    <p class="border-t-2 border-dashed border-gray-400 pt-1 px-8 font-black text-blue-950">Head Teacher Signature &amp; Stamp</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE 2: COMPARATIVE ANALYTICS & VISUAL CHARTS ================= -->
+        <div class="bg-white text-blue-950 rounded-3xl p-8 md:p-12 shadow-2xl print-shadow page-break flex flex-col justify-between min-h-[1050px] border-2 border-yellow-400">
+            <div>
+                <div class="border-b-2 border-blue-200 pb-4 flex justify-between items-center mb-6">
+                    <h2 class="font-black text-blue-950 text-sm uppercase">St. Mary's High School Ziroobwe &bull; {{ report.class_name }} Visual Analytics</h2>
+                    <span class="text-xs font-mono font-bold text-gray-600">Page 2 of 4</span>
+                </div>
+
+                <h3 class="text-lg font-black text-blue-950 uppercase mb-4">📊 Sectional &amp; Trend Visualizations</h3>
+                
+                <!-- Visual SVG Bar / Trend Chart Simulator -->
+                <div class="bg-blue-50/50 border-2 border-blue-200 p-6 rounded-2xl space-y-6 mb-6 shadow-sm">
+                    <h4 class="text-xs font-black text-blue-950 uppercase tracking-wider">Humanities vs Sciences Performance Distribution</h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-black mb-1">
+                                <span class="text-emerald-800">Sciences Aggregate Mean</span>
+                                <span class="font-mono">{{ report.science_average }}%</span>
+                            </div>
+                            <div class="w-full bg-slate-200 h-4 rounded-full overflow-hidden shadow-inner border border-slate-300">
+                                <div class="bg-emerald-600 h-full rounded-full transition-all duration-500" style="width: {{ report.science_average }}%;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-black mb-1">
+                                <span class="text-purple-800">Humanities Aggregate Mean</span>
+                                <span class="font-mono">{{ report.humanities_average }}%</span>
+                            </div>
+                            <div class="w-full bg-slate-200 h-4 rounded-full overflow-hidden shadow-inner border border-slate-300">
+                                <div class="bg-purple-600 h-full rounded-full transition-all duration-500" style="width: {{ report.humanities_average }}%;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-black mb-1">
+                                <span class="text-blue-950">Overall Cohort Class Mean</span>
+                                <span class="font-mono">{{ report.class_average }}%</span>
+                            </div>
+                            <div class="w-full bg-slate-200 h-4 rounded-full overflow-hidden shadow-inner border border-slate-300">
+                                <div class="bg-blue-700 h-full rounded-full transition-all duration-500" style="width: {{ report.class_average }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparative Trend Analysis Summary -->
+                <div class="space-y-3 bg-blue-50/70 p-5 rounded-2xl border border-blue-200 shadow-sm">
+                    <h4 class="text-sm font-black text-blue-950 uppercase tracking-wider">Key Comparative Insights</h4>
+                    <p class="text-xs text-gray-800 leading-relaxed font-medium">
+                        The comparative breakdown highlights distinct academic inclinations across the cohort. 
+                        {% if report.science_average >= report.humanities_average %}
+                        Science disciplines are currently outperforming humanities by <strong class="text-emerald-700">{{ (report.science_average - report.humanities_average)|round(1) }}%</strong>, demonstrating robust laboratory engagement and mathematical reasoning.
+                        {% else %}
+                        Humanities disciplines are exhibiting superior performance over sciences by <strong class="text-purple-700">{{ (report.humanities_average - report.science_average)|round(1) }}%</strong>, anchored by strong linguistic expression and conceptual mastery.
+                        {% endif %}
+                        Departmental resource allocation will be adjusted accordingly to bridge any existing gaps.
+                    </p>
+                </div>
+            </div>
+
+            <div class="border-t-2 border-blue-200 pt-4 text-center text-xs font-black text-gray-600">
+                Institutional Academic Evaluation &bull; Confidential Board Document
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE 3: SUBJECT DEPTH ANALYSIS & EXPLANATIONS ================= -->
+        <div class="bg-white text-blue-950 rounded-3xl p-8 md:p-12 shadow-2xl print-shadow page-break flex flex-col justify-between min-h-[1050px] border-2 border-yellow-400">
+            <div>
+                <div class="border-b-2 border-blue-200 pb-4 flex justify-between items-center mb-6">
+                    <h2 class="font-black text-blue-950 text-sm uppercase">St. Mary's High School Ziroobwe &bull; Subject Depth Analysis</h2>
+                    <span class="text-xs font-mono font-bold text-gray-600">Page 3 of 4</span>
+                </div>
+
+                <h3 class="text-lg font-black text-blue-950 uppercase mb-4">📖 Detailed Subject-by-Subject Explanations</h3>
+
+                <div class="space-y-4 max-h-[720px] overflow-y-auto pr-2">
+                    {% for sub in report.subject_summaries %}
+                    <div class="bg-blue-50/60 border border-blue-200 p-4 rounded-2xl space-y-1 shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-black text-blue-950 uppercase text-xs">{{ sub.subject }}</h4>
+                            <span class="font-mono font-black text-sm text-blue-900 bg-blue-100 px-2 py-0.5 rounded-lg border border-blue-300">Mean: {{ sub.average }}%</span>
+                        </div>
+                        <p class="text-xs text-gray-800 leading-relaxed font-medium">
+                            In <strong>{{ sub.subject }}</strong>, the class recorded a sectional average of <strong>{{ sub.average }}%</strong>. 
+                            Evaluation tracking indicates that <strong>{{ sub.improvements }}</strong> student(s) demonstrated progressive upward trends, while <strong>{{ sub.declines }}</strong> student(s) experienced marginal declines. 
+                            {% if sub.average >= 75 %}
+                            This subject exhibits exceptional mastery, reflecting rigorous curriculum alignment and effective instructional delivery.
+                            {% elif sub.average >= 60 %}
+                            Performance remains stable and satisfactory, with steady comprehension across core competencies.
+                            {% else %}
+                            This discipline requires targeted academic intervention, structured remedial coaching, and increased formative assessments to elevate student proficiency.
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 italic text-xs">No subject explanations available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="border-t-2 border-blue-200 pt-4 text-center text-xs font-black text-gray-600">
+                Institutional Academic Evaluation &bull; Confidential Board Document
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE 4: COHORT MASTER TABLE (WHOLE CLASS ON ONE SPREADSHEET TABLE) ================= -->
+        <div class="bg-white text-blue-950 rounded-3xl p-8 md:p-12 shadow-2xl print-shadow page-break flex flex-col justify-between min-h-[1050px] border-2 border-yellow-400">
+            <div>
+                <div class="border-b-2 border-blue-200 pb-4 flex justify-between items-center mb-6">
+                    <h2 class="font-black text-blue-950 text-sm uppercase">St. Mary's High School Ziroobwe &bull; Class Master Summary Table</h2>
+                    <span class="text-xs font-mono font-bold text-gray-600">Page 4 of 4</span>
+                </div>
+
+                <h3 class="text-lg font-black text-blue-950 uppercase mb-2">📋 Complete Cohort Performance Schedule</h3>
+                <p class="text-xs text-gray-700 mb-6 font-medium">Master roster reflecting individual student academic averages and standings across {{ report.class_name }}.</p>
+
+                <div class="overflow-x-auto rounded-2xl border border-blue-200 shadow-sm">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-blue-950 text-white uppercase text-[10px]">
+                                <th class="py-3 px-4 border border-blue-900">Student ID</th>
+                                <th class="py-3 px-4 border border-blue-900">Full Name</th>
+                                <th class="py-3 px-4 border border-blue-900">Stream</th>
+                                <th class="py-3 px-4 text-right border border-blue-900">Term Average</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-blue-200 font-medium">
+                            {% for item in report.students_data %}
+                            <tr class="hover:bg-blue-50/50">
+                                <td class="py-2.5 px-4 font-mono font-bold text-blue-900 border border-blue-200">{{ item.student.id }}</td>
+                                <td class="py-2.5 px-4 font-black uppercase text-blue-950 border border-blue-200">{{ item.student.name }}</td>
+                                <td class="py-2.5 px-4 border border-blue-200 text-gray-800">{{ item.student.stream }}</td>
+                                <td class="py-2.5 px-4 text-right font-mono font-black text-amber-700 border border-blue-200 bg-amber-50/30">{{ item.average }}%</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="py-6 text-center text-gray-500 font-bold">No students registered in this class cohort.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="border-t-2 border-blue-200 pt-6 flex justify-between text-xs font-bold text-gray-700">
+                <div>
+                    <p class="font-black text-blue-950">Total Class Enrollment: {{ report.students_data | length }} Students</p>
+                    <p class="font-bold text-gray-600">St. Mary's High School Ziroobwe Portal</p>
+                </div>
+                <div class="text-right">
+                    <p class="border-t-2 border-dashed border-gray-400 pt-1 px-8 font-black text-blue-950">Director of Studies Signature</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</body>
+</html>

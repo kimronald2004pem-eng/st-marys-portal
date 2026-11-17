@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Fees Receipt - {{ receipt.receipt_no }}</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style>
+        @page { size: A5 landscape; margin: 5mm; }
+        @media print {
+            body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0 !important; padding: 0 !important; }
+            .no-print { display: none !important; }
+            .receipt-box { border: 2px solid #1e3a8a !important; box-shadow: none !important; width: 100% !important; }
+        }
+        body { background: #0f172a; font-family: system-ui, -apple-system, sans-serif; }
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 py-12 font-sans text-gray-100 flex justify-center items-center min-h-screen">
+
+    <div class="no-print absolute top-4 flex gap-3">
+        <a href="/payments" class="tactile-btn bg-blue-800 hover:bg-blue-700 text-yellow-300 border border-yellow-400 text-xs px-4 py-2 rounded-xl font-black uppercase shadow">&larr; Back to Payments</a>
+        <button onclick="window.print();" class="tactile-btn bg-emerald-700 hover:bg-emerald-600 text-white border border-yellow-400 text-xs px-5 py-2 rounded-xl font-black uppercase shadow">🖨️ Print Receipt</button>
+    </div>
+
+    <div class="receipt-box max-w-xl w-full bg-white text-blue-950 border-2 border-yellow-400 rounded-3xl shadow-2xl p-5 space-y-3">
+        <div class="flex justify-between items-center border-b-2 border-blue-900 pb-3 bg-gradient-to-r from-blue-900 to-red-950 text-white p-3 rounded-2xl shadow-md">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='images/school_badge.jpg') }}" alt="Badge" class="w-10 h-10 object-contain rounded-full border border-yellow-400 bg-white p-0.5">
+                <div>
+                    <h1 class="text-xs font-black text-yellow-400 uppercase tracking-wide">ST. MARY'S HIGH SCHOOL ZIROOBWE</h1>
+                    <p class="text-[9px] text-gray-200 font-bold">P.O. Box 7481, Kampala | Tel: +256 747 515 338</p>
+                    <p class="text-[9px] font-serif italic text-yellow-300 font-black">Motto: "Ever the Best"</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="bg-red-600 text-yellow-300 border border-yellow-400 text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider block shadow">OFFICIAL FEES RECEIPT</span>
+                <p class="text-xs font-mono font-black text-yellow-400 mt-1">{{ receipt.receipt_no }}</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs bg-blue-50/80 p-3 rounded-2xl border border-blue-200 shadow-sm font-medium">
+            <div><span class="text-gray-600 font-bold">Student Name:</span> <strong class="text-blue-950 uppercase font-black">{{ receipt.student_name }}</strong></div>
+            <div><span class="text-gray-600 font-bold">Student ID:</span> <strong class="text-blue-900 font-mono font-bold">{{ receipt.student_id }}</strong></div>
+            <div><span class="text-gray-600 font-bold">Academic Term:</span> <strong class="text-blue-950 font-bold">{{ receipt.term }}</strong></div>
+            <div><span class="text-gray-600 font-bold">Date Issued:</span> <strong class="text-blue-950 font-bold">{{ receipt.date }}</strong></div>
+            <div class="col-span-2 border-t border-blue-200 pt-1"><span class="text-gray-600 font-bold">Payment Method:</span> <strong class="text-blue-950 font-bold">{{ receipt.payment_method }}</strong></div>
+        </div>
+
+        <div class="bg-blue-900 text-yellow-300 border border-yellow-400/40 p-3 rounded-2xl flex justify-between items-center shadow-sm">
+            <span class="text-xs font-black uppercase tracking-wider">Amount Received:</span>
+            <span class="text-base font-mono font-black text-white underline">UGX {{ "{:,.0f}".format(receipt.amount) }}</span>
+        </div>
+
+        <div class="pt-4 flex justify-between items-end text-[10px] text-gray-700 font-bold border-t border-blue-200">
+            <div>
+                <p class="border-t border-dashed border-gray-400 pt-1 font-black text-blue-950">Bursar / Cashier Signature</p>
+            </div>
+            <div class="text-center w-28 h-12 border-2 border-dashed border-blue-300 bg-blue-50/50 rounded-xl flex items-center justify-center text-[9px] text-blue-950 font-black uppercase tracking-wider shadow-inner">
+                School Stamp
+            </div>
+        </div>
+    </div>
+</body>
+</html>

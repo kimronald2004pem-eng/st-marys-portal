@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Fees Ledger - St. Mary's High School Ziroobwe</title>
+    <!-- 100% Offline Tailwind Engine -->
+    <script src="{{ url_for('static', filename='js/tailwind.js') }}"></script>
+    <style id="page-orientation-style">
+        @page { size: A4 portrait; margin: 10mm; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-box { border: none !important; box-shadow: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; }
+        }
+        .print-header { display: none; }
+        .tactile-btn {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tactile-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px -5px rgba(250, 204, 21, 0.45);
+        }
+        .tactile-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-blue-950 text-gray-100 min-h-screen py-6 flex flex-col items-center font-sans">
+
+    <!-- Top Control Bar (Hidden on print) -->
+    <div class="no-print mb-6 flex flex-wrap gap-3 items-center bg-blue-900/90 p-4 rounded-3xl shadow-xl border-2 border-yellow-400 max-w-7xl w-full justify-between">
+        <div class="flex items-center gap-3">
+            <a href="/dashboard" class="tactile-btn bg-blue-800 hover:bg-blue-700 border border-yellow-400 text-yellow-300 text-xs px-5 py-2.5 rounded-xl font-black uppercase">&larr; Dashboard</a>
+            <span class="text-xs font-bold text-yellow-400 ml-2 uppercase tracking-wide">Orientation:</span>
+            <button onclick="setOrientation('portrait')" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-xs px-4 py-2 rounded-xl font-black uppercase shadow">Portrait</button>
+            <button onclick="setOrientation('landscape')" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-xs px-4 py-2 rounded-xl font-black uppercase shadow">Landscape</button>
+        </div>
+        <button onclick="window.print();" class="tactile-btn bg-emerald-700 hover:bg-emerald-600 border border-yellow-400 text-white text-xs px-5 py-2.5 rounded-xl font-black uppercase shadow">🖨️ Print Fees Report</button>
+    </div>
+
+    <main class="print-box max-w-7xl w-full space-y-6 px-4">
+        
+        <!-- PRINT-ONLY OFFICIAL SCHOOL HEADER -->
+        <div class="print-header">
+            <h1 class="text-xl font-black text-blue-900">ST. MARY'S HIGH SCHOOL ZIROOBWE</h1>
+            <p class="text-xs text-gray-600 font-bold uppercase tracking-wider">OFFICIAL SCHOOL FEES LEDGER &amp; BALANCES REPORT</p>
+        </div>
+
+        <!-- Filter & Search Controls (Hidden on print) -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl p-6 border-2 border-yellow-400 flex flex-wrap justify-between items-center gap-4 no-print">
+            <form method="GET" action="/payments" class="flex flex-wrap items-center gap-4 w-full">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-yellow-300 uppercase">Class:</span>
+                    <select name="selected_class" onchange="this.form.submit()" class="border border-yellow-400/60 rounded-xl px-3 py-2 text-xs bg-blue-950 text-white font-bold">
+                        <option value="ALL" {% if selected_class == 'ALL' %}selected{% endif %}>All Classes (Whole School)</option>
+                        {% for c in classes %}
+                        <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-yellow-300 uppercase">Filter:</span>
+                    <select name="balance_filter" onchange="this.form.submit()" class="border border-yellow-400/60 rounded-xl px-3 py-2 text-xs bg-blue-950 text-white font-bold">
+                        <option value="ALL" {% if balance_filter == 'ALL' %}selected{% endif %}>All Students</option>
+                        <option value="balance" {% if balance_filter == 'balance' %}selected{% endif %}>Students with Balances Only</option>
+                        <option value="cleared" {% if balance_filter == 'cleared' %}selected{% endif %}>Cleared Students Only</option>
+                    </select>
+                </div>
+
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Search student name..." class="border border-yellow-400/60 rounded-xl px-4 py-2 text-xs w-64 bg-blue-950 text-white font-bold placeholder-gray-400">
+                <button type="submit" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 px-5 py-2 rounded-xl text-xs font-black uppercase shadow">Apply</button>
+                <a href="/payments" class="tactile-btn bg-blue-950 text-yellow-300 border border-yellow-400/50 px-4 py-2 rounded-xl text-xs font-black uppercase">Reset</a>
+            </form>
+        </div>
+
+        <!-- Payments Ledger Table -->
+        <div class="bg-blue-900/90 rounded-3xl shadow-2xl border-2 border-yellow-400 overflow-hidden">
+            <div class="p-5 border-b border-blue-800 font-black text-sm uppercase text-yellow-400 no-print">School Fees Ledger &amp; Status</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-blue-950 uppercase border-b border-blue-800 text-yellow-300 text-[10px]">
+                            <th class="py-3 px-4">Student ID</th>
+                            <th class="py-3 px-4">Student Name</th>
+                            <th class="py-3 px-4">Class</th>
+                            <th class="py-3 px-4 text-right">Total Fees</th>
+                            <th class="py-3 px-4 text-right">Amount Paid</th>
+                            <th class="py-3 px-4 text-right">Balance</th>
+                            <th class="py-3 px-4 text-center">Status</th>
+                            <th class="py-3 px-4 text-right no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-800">
+                        {% for p in payments %}
+                        {% set bal = p.total_fees - p.paid %}
+                        <tr class="hover:bg-blue-800/50">
+                            <td class="py-3 px-4 font-mono font-bold text-yellow-400">{{ p.id }}</td>
+                            <td class="py-3 px-4 font-bold uppercase text-white">{{ p.name }}</td>
+                            <td class="py-3 px-4 text-gray-200">{{ p.class }} {{ p.stream }}</td>
+                            <td class="py-3 px-4 text-right font-mono text-white">UGX {{ "{:,.0f}".format(p.total_fees) }}</td>
+                            <td class="py-3 px-4 text-right font-mono text-emerald-300 font-bold">UGX {{ "{:,.0f}".format(p.paid) }}</td>
+                            <td class="py-3 px-4 text-right font-mono text-red-400 font-bold">UGX {{ "{:,.0f}".format(bal) }}</td>
+                            <td class="py-3 px-4 text-center">
+                                {% if bal <= 0 %}
+                                <span class="bg-emerald-900 border border-emerald-500 text-emerald-200 px-3 py-1 rounded-lg font-bold text-[10px]">CLEARED</span>
+                                {% else %}
+                                <span class="bg-red-900 border border-red-500 text-red-200 px-3 py-1 rounded-lg font-bold text-[10px]">BALANCE</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-right no-print flex justify-end gap-2 items-center">
+                                <form method="POST" action="/payments" class="flex items-center gap-1.5">
+                                    <input type="hidden" name="student_id" value="{{ p.id }}">
+                                    <input type="number" name="amount_paid" placeholder="Amount" class="border border-yellow-400/40 rounded-lg px-2.5 py-1.5 w-24 text-xs font-mono bg-blue-950 text-white font-bold" required>
+                                    <button type="submit" class="tactile-btn bg-yellow-400 hover:bg-yellow-300 text-blue-950 px-3 py-1.5 rounded-lg font-black text-xs uppercase shadow">Add Pay</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function setOrientation(mode) {
+            const styleEl = document.getElementById('page-orientation-style');
+            if (mode === 'landscape') {
+                styleEl.innerHTML = `@page { size: A4 landscape; margin: 10mm; } @media print { .no-print { display: none !important; } body { background: white !important; } .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; } }`;
+                alert("Print orientation set to LANDSCAPE.");
+            } else {
+                styleEl.innerHTML = `@page { size: A4 portrait; margin: 10mm; } @media print { .no-print { display: none !important; } body { background: white !important; } .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; } }`;
+                alert("Print orientation set to PORTRAIT.");
+            }
+        }
+    </script>
+</body>
+</html>
